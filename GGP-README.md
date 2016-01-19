@@ -1,1 +1,1 @@
-GGP intranet, based in CodeIgniter 3.0.4
+GGP intranet v1.0 with CodeIgniter 3.0.4
