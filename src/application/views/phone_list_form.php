@@ -1,4 +1,4 @@
 <div class="hide">
-<?php echo $variable; ?>
+	<?php echo $variable; ?>
 </div>
 {variable_post}

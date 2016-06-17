@@ -1,4 +1,4 @@
-<?php 
+<?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /*
@@ -74,7 +74,7 @@ $active_group = 'default';
 $query_builder = TRUE;
 
 $db['default'] = array(
-	'dsn'	=> '',
+	'dsn' => '',
 	'hostname' => 'svr-mysql.ggp.local',
 	'username' => $_SERVER['INTRANET_USER'],
 	'password' => $_SERVER['INTRANET_PASS'],

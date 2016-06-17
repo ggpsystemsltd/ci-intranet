@@ -5,14 +5,15 @@
  *
  * Work with remote servers via cURL much easier than using the native PHP bindings.
  *
- * @package        	CodeIgniter
- * @subpackage    	Libraries
- * @category    	Libraries
- * @author        	Philip Sturgeon
+ * @package            CodeIgniter
+ * @subpackage        Libraries
+ * @category        Libraries
+ * @author            Philip Sturgeon
  * @license         http://philsturgeon.co.uk/code/dbad-license
- * @link			http://philsturgeon.co.uk/code/codeigniter-curl
+ * @link            http://philsturgeon.co.uk/code/codeigniter-curl
  */
-class Curl {
+class Curl
+{
 
 	protected $_ci;                 // CodeIgniter instance
 	protected $response = '';       // Contains the cURL response for debug
@@ -26,11 +27,10 @@ class Curl {
 
 	function __construct($url = '')
 	{
-		$this->_ci = & get_instance();
+		$this->_ci = &get_instance();
 		log_message('debug', 'cURL Class Initialized');
 
-		if ( ! $this->is_enabled())
-		{
+		if (!$this->is_enabled()) {
 			log_message('error', 'cURL Class - PHP was not built with cURL enabled. Rebuild PHP with --with-curl to use cURL.');
 		}
 
@@ -39,8 +39,7 @@ class Curl {
 
 	public function __call($method, $arguments)
 	{
-		if (in_array($method, array('simple_get', 'simple_post', 'simple_put', 'simple_delete', 'simple_patch')))
-		{
+		if (in_array($method, array('simple_get', 'simple_post', 'simple_put', 'simple_delete', 'simple_patch'))) {
 			// Take off the "simple_" and past get/post/put/delete/patch to _simple_call
 			$verb = str_replace('simple_', '', $method);
 			array_unshift($arguments, $verb);
@@ -56,14 +55,10 @@ class Curl {
 	public function _simple_call($method, $url, $params = array(), $options = array())
 	{
 		// Get acts differently, as it doesnt accept parameters in the same way
-		if ($method === 'get')
-		{
+		if ($method === 'get') {
 			// If a URL is provided, create new session
-			$this->create($url.($params ? '?'.http_build_query($params, NULL, '&') : ''));
-		}
-
-		else
-		{
+			$this->create($url . ($params ? '?' . http_build_query($params, NULL, '&') : ''));
+		} else {
 			// If a URL is provided, create new session
 			$this->create($url);
 
@@ -79,18 +74,15 @@ class Curl {
 	public function simple_ftp_get($url, $file_path, $username = '', $password = '')
 	{
 		// If there is no ftp:// or any protocol entered, add ftp://
-		if ( ! preg_match('!^(ftp|sftp)://! i', $url))
-		{
+		if (!preg_match('!^(ftp|sftp)://! i', $url)) {
 			$url = 'ftp://' . $url;
 		}
 
 		// Use an FTP login
-		if ($username != '')
-		{
+		if ($username != '') {
 			$auth_string = $username;
 
-			if ($password != '')
-			{
+			if ($password != '') {
 				$auth_string .= ':' . $password;
 			}
 
@@ -115,8 +107,7 @@ class Curl {
 	public function post($params = array(), $options = array())
 	{
 		// If its an array (instead of a query string) then format it correctly
-		if (is_array($params))
-		{
+		if (is_array($params)) {
 			$params = http_build_query($params, NULL, '&');
 		}
 
@@ -132,8 +123,7 @@ class Curl {
 	public function put($params = array(), $options = array())
 	{
 		// If its an array (instead of a query string) then format it correctly
-		if (is_array($params))
-		{
+		if (is_array($params)) {
 			$params = http_build_query($params, NULL, '&');
 		}
 
@@ -146,12 +136,11 @@ class Curl {
 		// Override method, I think this overrides $_POST with PUT data but... we'll see eh?
 		$this->option(CURLOPT_HTTPHEADER, array('X-HTTP-Method-Override: PUT'));
 	}
-	
+
 	public function patch($params = array(), $options = array())
 	{
 		// If its an array (instead of a query string) then format it correctly
-		if (is_array($params))
-		{
+		if (is_array($params)) {
 			$params = http_build_query($params, NULL, '&');
 		}
 
@@ -168,8 +157,7 @@ class Curl {
 	public function delete($params, $options = array())
 	{
 		// If its an array (instead of a query string) then format it correctly
-		if (is_array($params))
-		{
+		if (is_array($params)) {
 			$params = http_build_query($params, NULL, '&');
 		}
 
@@ -183,8 +171,7 @@ class Curl {
 
 	public function set_cookies($params = array())
 	{
-		if (is_array($params))
-		{
+		if (is_array($params)) {
 			$params = http_build_query($params, NULL, '&');
 		}
 
@@ -226,17 +213,14 @@ class Curl {
 
 	public function ssl($verify_peer = TRUE, $verify_host = 2, $path_to_cert = NULL)
 	{
-		if ($verify_peer)
-		{
+		if ($verify_peer) {
 			$this->option(CURLOPT_SSL_VERIFYPEER, TRUE);
 			$this->option(CURLOPT_SSL_VERIFYHOST, $verify_host);
 			if (isset($path_to_cert)) {
 				$path_to_cert = realpath($path_to_cert);
 				$this->option(CURLOPT_CAINFO, $path_to_cert);
 			}
-		}
-		else
-		{
+		} else {
 			$this->option(CURLOPT_SSL_VERIFYPEER, FALSE);
 		}
 		return $this;
@@ -245,8 +229,7 @@ class Curl {
 	public function options($options = array())
 	{
 		// Merge options in with the rest - done as array_merge() does not overwrite numeric keys
-		foreach ($options as $option_code => $option_value)
-		{
+		foreach ($options as $option_code => $option_value) {
 			$this->option($option_code, $option_value);
 		}
 
@@ -258,8 +241,7 @@ class Curl {
 
 	public function option($code, $value, $prefix = 'opt')
 	{
-		if (is_string($code) && !is_numeric($code))
-		{
+		if (is_string($code) && !is_numeric($code)) {
 			$code = constant('CURL' . strtoupper($prefix) . '_' . strtoupper($code));
 		}
 
@@ -271,8 +253,7 @@ class Curl {
 	public function create($url)
 	{
 		// If no a protocol in URL, assume its a CI link
-		if ( ! preg_match('!^\w+://! i', $url))
-		{
+		if (!preg_match('!^\w+://! i', $url)) {
 			$this->_ci->load->helper('url');
 			$url = site_url($url);
 		}
@@ -287,31 +268,25 @@ class Curl {
 	public function execute()
 	{
 		// Set two default options, and merge any extra ones in
-		if ( ! isset($this->options[CURLOPT_TIMEOUT]))
-		{
+		if (!isset($this->options[CURLOPT_TIMEOUT])) {
 			$this->options[CURLOPT_TIMEOUT] = 30;
 		}
-		if ( ! isset($this->options[CURLOPT_RETURNTRANSFER]))
-		{
+		if (!isset($this->options[CURLOPT_RETURNTRANSFER])) {
 			$this->options[CURLOPT_RETURNTRANSFER] = TRUE;
 		}
-		if ( ! isset($this->options[CURLOPT_FAILONERROR]))
-		{
+		if (!isset($this->options[CURLOPT_FAILONERROR])) {
 			$this->options[CURLOPT_FAILONERROR] = TRUE;
 		}
 
 		// Only set follow location if not running securely
-		if ( ! ini_get('safe_mode') && ! ini_get('open_basedir'))
-		{
+		if (!ini_get('safe_mode') && !ini_get('open_basedir')) {
 			// Ok, follow location is not set already so lets set it to true
-			if ( ! isset($this->options[CURLOPT_FOLLOWLOCATION]))
-			{
+			if (!isset($this->options[CURLOPT_FOLLOWLOCATION])) {
 				$this->options[CURLOPT_FOLLOWLOCATION] = TRUE;
 			}
 		}
 
-		if ( ! empty($this->headers))
-		{
+		if (!empty($this->headers)) {
 			$this->option(CURLOPT_HTTPHEADER, $this->headers);
 		}
 
@@ -322,8 +297,7 @@ class Curl {
 		$this->info = curl_getinfo($this->session);
 
 		// Request failed
-		if ($this->response === FALSE)
-		{
+		if ($this->response === FALSE) {
 			$errno = curl_errno($this->session);
 			$error = curl_error($this->session);
 
@@ -334,11 +308,8 @@ class Curl {
 			$this->error_string = $error;
 
 			return FALSE;
-		}
-
-		// Request successful
-		else
-		{
+		} // Request successful
+		else {
 			curl_close($this->session);
 			$this->last_response = $this->response;
 			$this->set_defaults();
@@ -359,8 +330,7 @@ class Curl {
 		echo "<h3>Response</h3>\n";
 		echo "<code>" . nl2br(htmlentities($this->last_response)) . "</code><br/>\n\n";
 
-		if ($this->error_string)
-		{
+		if ($this->error_string) {
 			echo "=============================================<br/>\n";
 			echo "<h3>Errors</h3>";
 			echo "<strong>Code:</strong> " . $this->error_code . "<br/>\n";
