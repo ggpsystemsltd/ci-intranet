@@ -12,9 +12,9 @@
 	<meta http-equiv="P3P" content="CP='NON DSP COR ADMa OUR LEG NAV'"/>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<title>{intranet_title}</title>
-	<link rel="stylesheet" type="text/css" href="/assets/style/ggp.css" media="screen"/>
-	<link rel="stylesheet" type="text/css" href="/assets/style/stylesheet.css"/>
-	<link rel="stylesheet" type="text/css" href="/assets/style/print.css" media="print"/>
+	<link rel="stylesheet" type="text/css" href="/ci/assets/style/ggp.css" media="screen"/>
+	<link rel="stylesheet" type="text/css" href="/ci/assets/style/stylesheet.css"/>
+	<link rel="stylesheet" type="text/css" href="/ci/assets/style/print.css" media="print"/>
 </head>
 
 <script language="javascript" type="text/javascript" src="/js/datetimepicker.js">
