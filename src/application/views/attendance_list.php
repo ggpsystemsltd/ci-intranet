@@ -6,7 +6,7 @@
 	{staff}
 	<tr class="r{class}">
 		<td>{name}</td>
-		<td>{attendance}</td>
+		<td class="{attclass}">{attendance}</td>
 	</tr>
 	{/staff}
 </table>

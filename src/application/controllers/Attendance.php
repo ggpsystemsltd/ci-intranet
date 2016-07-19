@@ -38,6 +38,7 @@ class Attendance extends CI_Controller {
                 $data[ 'staff' ][] = array(
                     'class' => $i,
                     'name' => $row[ 'name' ],
+                    'attclass' => preg_replace('/\s/', '', strtolower($row[ 'work_state' ])),
                     'attendance' => $row[ 'work_state' ],
                 );
                 ($i == 1 ? $i++ : $i--);
