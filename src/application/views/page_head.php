@@ -4,7 +4,7 @@
 	<meta name="author" content="{author_name}"/>
 	<meta name="copyright" content="&copy; <?php echo date('Y'); ?> GGP Systems Ltd"/>
 	<meta name="date" content="<?php echo date('c'); ?>"/>
-	<meta name="generator" content="Netbeans"/>
+	<meta name="generator" content="IntelliJ PhpStorm"/>
 	<meta name="robots" content="noindex, nofollow"/>
 	<meta name="description" content="{meta_description}"/>
 	<meta name="keywords" content="{keywords}"/>
@@ -12,12 +12,12 @@
 	<meta http-equiv="P3P" content="CP='NON DSP COR ADMa OUR LEG NAV'"/>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<title>{intranet_title}</title>
-	<link rel="stylesheet" type="text/css" href="/ci/assets/style/ggp.css" media="screen"/>
-	<link rel="stylesheet" type="text/css" href="/ci/assets/style/stylesheet.css"/>
-	<link rel="stylesheet" type="text/css" href="/ci/assets/style/print.css" media="print"/>
+	<link rel="stylesheet" type="text/css" href="/assets/style/ggp.css" media="screen"/>
+	<link rel="stylesheet" type="text/css" href="/assets/style/stylesheet.css"/>
+	<link rel="stylesheet" type="text/css" href="/assets/style/print.css" media="print"/>
 </head>
 
-<script language="javascript" type="text/javascript" src="/js/datetimepicker.js">
+<script language="javascript" type="text/javascript" src="/assets/js/datetimepicker.js">
 	//Date Time Picker script- by TengYong Ng of http://www.rainforestnet.com
 	//Script featured on JavaScript Kit (http://www.javascriptkit.com)
 	//For this script, visit http://www.javascriptkit.com 

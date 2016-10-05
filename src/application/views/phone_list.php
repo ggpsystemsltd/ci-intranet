@@ -7,7 +7,7 @@
 	{staff}
 	<tr class="r{class}">
 		<td>{extn}</td>
-		<td><span id="sprite" style="float: left;"><img id="{presence}" class="hide" src="/images/spritesheet.png"
+		<td><span id="sprite" style="float: left;"><img id="{presence}" class="hide" src="/assets/images/spritesheet.png"
 														width="0" height="1" alt=""/></span> {name}
 		</td>
 		<td>{externals}</td>

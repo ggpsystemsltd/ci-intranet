@@ -75,10 +75,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn' => '',
-	'hostname' => 'svr-mysql.ggp.local',
-	'username' => $_SERVER['INTRANET_USER'],
-	'password' => $_SERVER['INTRANET_PASS'],
-	'database' => 'intranetdb',
+	'hostname' => 'mysql',
+	'username' => 'root',
+	'password' => 'admin',
+	'database' => 'intranet',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => TRUE,

@@ -81,7 +81,7 @@ class Intranet extends CI_Controller {
 			'refresh' => '<meta http-equiv="refresh" content="30" />',
 			'remote_ip' => $s_remote_ip,
 		);
-		$data[ 'author_mailto' ] = safe_mailto( 'murray@ggpsystems.co.uk', $data[ 'author_name' ], $atts );
+		$data[ 'author_mailto' ] = safe_mailto( 'murray.crane@ggpsystems.co.uk', $data[ 'author_name' ], $atts );
 		$query = $this->db->get();
 		if( $query->num_rows() > 0 ) {
 			$i = 1;
