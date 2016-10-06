@@ -15,7 +15,7 @@ class Machines extends CI_Controller {
 
 		$this->load->database();
 		$this->load->helper( 'url' );
-		$this->load->library( array( 'session', 'grocery_CRUD' ));
+		$this->load->library( array( 'grocery_CRUD' ));
 	}
 
 	function index() {
@@ -94,7 +94,7 @@ class Machines extends CI_Controller {
 			)
 		);
 
-		$this->db->select( 'machine.machine_id, machine.name, machine.description, machine.os, machine.cpu, machine.ram, machine.diskspace, machine.powered, machine.rdp_sessions, machine.type, machine.location, machine.comment, machine.last_backup, machine.periodicity, machine.bookable' )->from( 'machine' )->where( 'machine.deleted', 0 )->order_by( 'machine.name' );
+		$this->db->select( 'machine.machine_id, machine.name, machine.description, machine.os, machine.cpu, machine.ram, machine.diskspace, machine.powered, machine.rdp_sessions, machine.type, machine.location, machine.comment, machine.ipv4_address, machine.mac_address, machine.last_backup, machine.periodicity, machine.bookable' )->from( 'machine' )->where( 'machine.deleted', 0 )->order_by( 'machine.name' );
 		$order = "Machine Name Order";
 		$atts = array(
 			'class' => 'link-mailto',
@@ -158,16 +158,18 @@ class Machines extends CI_Controller {
 				$types_array = explode( ",", $row[ 'type' ] );
 				$type_string = "";
 				foreach( $types_array as $value ) {
-					$type_string .= sprintf( '<span id="sprite" style="float: right;"><img id="%s" src="/images/spritesheet.png" width="0" height="1" title="%s" alt="%s" /></span>', $type[ $value ][ 'colour' ], $type[ $value ][ 'name' ], $type[ $value ][ 'name' ] );
+					$type_string .= sprintf( '<span id="sprite" style="float: right;"><img id="%s" src="/assets/images/spritesheet.png" width="0" height="1" title="%s" alt="%s" /></span>', $type[ $value ][ 'colour' ], $type[ $value ][ 'name' ], $type[ $value ][ 'name' ] );
 				}
 				$data[ 'machine' ][] = array(
 					'class' => $i,
 					'name' => ($row[ 'powered' ] == '0' ? '<span style="color: red;">' . $row[ 'name' ] . '</span>' : $row[ 'name' ]) . "&nbsp;" . $type_string,
 					'os' => $row[ 'os' ],
-					'configuration' => ($configuration != "" ? '<span style="width: 500px;">' . $configuration . '</span>' : ""),
+					'configuration' => ( $configuration != "" ? '<span style="width: 500px;">' . $configuration . '</span>' : ""),
 					'description' => $description_array[ 0 ],
 					'further' => ($further != "" ? '<span style="width: 500px;">' . $further . '</span>' : ""),
 					'backup' => ( $row[ 'last_backup' ] != "0000-00-00" ? $row[ 'last_backup' ] . '&nbsp;' . sprintf( '[%s]', $backup_period[ $row[ 'periodicity' ] ][ 'name' ][ 0 ] ) : "" ),
+					'ipv4' => ( $row[ 'ipv4_address' ] != "" ? $row[ 'ipv4_address' ] : "" ),
+					'mac' => ( $row[ 'mac_address' ] != "" ? '<span style="width: 500px;">' . $row[ 'mac_address' ] . '</span>' : "" ),
 					'software' => $software,
 					'booking' => ( $row[ 'bookable' ] == 1 ? ( $row[ 'note' ] != NULL ? $row[ 'note' ] : form_checkbox( 'machines[]', $row[ 'machine_id' ], set_checkbox( 'machines[]', $row[ 'machine_id' ] ) )) : ""),
 				);
@@ -197,7 +199,7 @@ class Machines extends CI_Controller {
 		$data[ 'variable' ] .= form_input( 'reason', xss_clean(set_value( 'reason' ))) . "<br />\n";
 		$data[ 'variable' ] .= form_label( 'Starting:', 'start' );
 		$data[ 'variable' ] .= "<input name=\"start\" type=\"text\" id=\"start\" />\n";
-		$data[ 'variable' ] .= "<a href=\"javascript:NewCal('start','ddMMyyyy', true, 24)\"><img src=\"/js/cal.gif\" alt=\"\" width=\"16\" height=\"16\" /></a><br />\n";
+		$data[ 'variable' ] .= "<a href=\"javascript:NewCal('start','ddMMyyyy', true, 24)\"><img src=\"/assets/js/cal.gif\" alt=\"\" width=\"16\" height=\"16\" /></a><br />\n";
 		$data[ 'variable' ] .= form_label( 'Est. duration:', 'duration' );
 		$data[ 'variable' ] .= form_input( 'duration', xss_clean(set_value( 'duration' ))) . "<br />\n";
 		$data[ 'variable' ] .= form_label( "Add booking:", 'mysubmit' );
@@ -246,7 +248,7 @@ class Machines extends CI_Controller {
 			$this->db->insert( 'booking', $data );
 			$booking_id = $this->db->insert_id();
 			$log_data = array(
-				'ip_address' => $this->session->userdata( 'ip_address' ),
+				'ip_address' => filter_input(INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
 				'booking_id' => $booking_id,
 				'operation' => "add"
 			);
@@ -277,7 +279,7 @@ class Machines extends CI_Controller {
 			$this->db->where( 'booking_id', $booking_id );
 			$this->db->update( 'booking', $data );
 			$log_data = array(
-				'ip_address' => $this->session->userdata( 'ip_address' ),
+				'ip_address' => filter_input(INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
 				'booking_id' => $booking_id,
 				'operation' => "delete"
 			);
