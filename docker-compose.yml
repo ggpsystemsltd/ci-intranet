@@ -1,0 +1,45 @@
+nginx:
+  image: tutum/nginx
+  ports:
+    - "80:80"
+  links:
+    - phpfpm
+  volumes:
+    - ./docker/nginx/default:/etc/nginx/sites-available/default
+    - ./docker/nginx/default:/etc/nginx/sites-enabled/default
+    - ./docker/logs/nginx-access.log:/var/log/nginx/access.log
+    - ./docker/logs/nginx-error.log:/var/log/nginx/error.log
+    - ./src/assets:/usr/share/nginx/html/assets
+
+phpfpm:
+  image: pantsmanuk/fpm
+  ports:
+    - "9000:9000"
+  links:
+    - mysql
+  environment:
+    INTRANET_USER: intranet
+    INTRANET_PASS: ge2UbrewafRe
+  volumes:
+    - ./src:/usr/share/nginx/html
+
+mysql:
+  image: mariadb
+  ports:
+    - "3306:3306"
+  environment:
+    MYSQL_ROOT_PASSWORD: admin
+  volumes:
+    - ./docker/mysql:/docker-entrypoint-initdb.d
+
+phpmyadmin:
+  image: phpmyadmin/phpmyadmin
+  restart: always
+  links:
+    - mysql
+  ports:
+    - 8183:80
+  environment:
+    MYSQL_USERNAME: admin
+    MYSQL_ROOT_PASSWORD: admin
+    PMA_ARBITRARY: 1
