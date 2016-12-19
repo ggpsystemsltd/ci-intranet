@@ -7,14 +7,11 @@ class Attendance extends CI_Controller {
 
         $this->load->database();
         $this->load->helper( 'url' );
-        $this->load->library( 'grocery_CRUD' );
     }
 
     function index() {
         $this->load->helper( 'form' );
-        $this->load->library( array( 'form_validation', 'ggpclass', 'parser' ));
-
-        $this->db->select( 'staff.name, staff.work_state' )->from( 'staff' )->where( 'staff.active', 1 )->where( 'staff.work_state !=', 'NaN')->order_by( 'staff.firstname' );
+        $this->load->library( array( 'calendar', 'form_validation', 'ggpclass', 'parser' ));
 
         $post = $this->input->post( NULL, TRUE );
         $atts = array(
@@ -29,8 +26,12 @@ class Attendance extends CI_Controller {
             'refresh' => '',
             'meta_description' => 'Staff attendance record.',
             'keywords' => 'staff attendance',
+            'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
         );
         $data[ 'author_mailto' ] = safe_mailto( 'murray.crane@ggpsystems.co.uk', $data[ 'author_name' ], $atts );
+
+	// Attendance table
+        $this->db->select( 'staff.name, staff.work_state' )->from( 'staff' )->where( 'staff.active', 1 )->where( 'staff.work_state !=', 'NaN')->order_by( 'staff.firstname' );
         $query = $this->db->get();
         if( $query->num_rows() > 0 ) {
             $i = 1;
@@ -45,20 +46,58 @@ class Attendance extends CI_Controller {
             }
         }
 
+	// Vacations table
+        $query = $this->db->query( 'SELECT staff.name, holidays.start, holidays.end FROM `holidays` 
+	JOIN `staff` ON holidays.staff_id=staff.staff_id 
+	WHERE `approved`=1 
+	AND `start` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 week) 
+	OR `end` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 week) 
+	OR CURDATE() BETWEEN `start` AND `end` ORDER BY staff.firstname' );
+        if( $query->num_rows() > 0 ) {
+            $i = 1;
+            foreach( $query->result_array() as $row ) {
+                $data[ 'holidays' ][] = array(
+                    'class' => $i,
+                    'name' => $row[ 'name' ],
+                    'dates' => $row[ 'start' ] . " to " . $row[ 'end' ],
+                );
+                ($i == 1 ? $i++ : $i--);
+            }
+        }
+
+        // Last update
+        $this->db->select_max( 'updated' )->from( 'staff' )->where( 'staff.active', 1 )->where( 'staff.work_state !=', 'NaN')->order_by( 'staff.firstname' );
+        $query = $this->db->get();
+        if( $query->num_rows() > 0 ) {
+            foreach( $query->result_array() as $row ) {
+                $data = array_merge( $data, array(
+                    'updated' => $row[ 'updated' ],
+                ));
+            }
+        }
+
         $this->parser->parse( 'page_head', $data );
         $this->parser->parse( 'attendance_list', $data );
         $this->parser->parse( 'page_foot', $data );
     }
 
-    public function set()
-    {
-        $this->grocery_crud->set_table( 'staff' );
-        $this->grocery_crud->set_subject( 'Attendance' );
-        $this->grocery_crud->columns( 'name', 'work_state' );
-        $this->grocery_crud->fields( 'name', 'work_state' );
-        $this->grocery_crud->display_as( 'work_state', 'Attendance' );
-        $this->grocery_crud->where( 'active', 1 );
-        $this->grocery_crud->where( 'work_state !=', 'NaN' );
+    public function set( $table = 'staff' )
+	{
+		$this->load->library( 'grocery_CRUD' );
+
+		if( $table == 'holidays' )
+		{
+			$this->grocery_crud->set_table( 'holidays' );
+			$this->grocery_crud->set_subject( 'Vacations' );
+		} else {
+			$this->grocery_crud->set_table( 'staff' );
+			$this->grocery_crud->set_subject( 'Attendance' );
+			$this->grocery_crud->columns( 'name', 'work_state' );
+			$this->grocery_crud->fields( 'name', 'work_state' );
+			$this->grocery_crud->display_as( 'work_state', 'Attendance' );
+			$this->grocery_crud->where( 'active', 1 );
+			$this->grocery_crud->where( 'work_state !=', 'NaN' );
+		}
 
         $output = $this->grocery_crud->render();
         $this->crud_output( $output );
