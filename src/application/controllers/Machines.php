@@ -160,6 +160,13 @@ class Machines extends CI_Controller {
 				foreach( $types_array as $value ) {
 					$type_string .= sprintf( '<span id="sprite" style="float: right;"><img id="%s" src="/assets/images/spritesheet.png" width="0" height="1" title="%s" alt="%s" /></span>', $type[ $value ][ 'colour' ], $type[ $value ][ 'name' ], $type[ $value ][ 'name' ] );
 				}
+				if( $row[ 'location' ] == "RoadWarrior" ) {
+					$t_name = '<span style="color: green;"><strong>' . $row[ 'name' ] .'</strong></span>';
+				} elseif( $row[ 'powered' ] == '0' ) {
+					$t_name = '<span style="color: red;"><em>' . $row[ 'name' ] .'</em></span>';
+				} else {
+					$t_name = $t_name = $row[ 'name' ];
+				}
 				$data[ 'machine' ][] = array(
 					'class' => $i,
 					'name' => ($row[ 'powered' ] == '0' ? '<span style="color: red;">' . $row[ 'name' ] . '</span>' : $row[ 'name' ]) . "&nbsp;" . $type_string,

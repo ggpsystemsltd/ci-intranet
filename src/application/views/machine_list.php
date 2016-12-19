@@ -50,7 +50,10 @@
 		<td>[Q] Quarterly</td>
 	</tr>
 	<tr>
-		<td colspan="6"><span style="color: red;">machine_name</span> Machine is normally not powered. Ask Murray.</td>
+		<td colspan="6"><span style="color: green;"><strong>machine_name</strong></span> Machine is "Road Warrior"; normally not in the office.</td>
+	</tr>
+	<tr>
+		<td colspan="6"><span style="color: red;"><em>machine_name</em></span> Machine is normally not powered. Ask Murray.</td>
 	</tr>
 	<tr>
 		<td colspan="6"><em>Tip: hover over the images to see the type description.</em></td>
