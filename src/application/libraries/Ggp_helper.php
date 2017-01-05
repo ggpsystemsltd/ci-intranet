@@ -4,7 +4,7 @@
  * Helper functions for the GGP CodeIgniter intranet
  */
 
-class Ggpclass
+class Ggp_helper
 {
 	public function day_start($p_date)
 	{
@@ -18,6 +18,6 @@ class Ggpclass
 		return mktime(23, 59, 59, $t_date[1], $t_date[2], $t_date[0]);
 	}
 }
-/* End of file Ggp.php */
-/* Location: application/libraries/GGP_Library.php */
+/* End of file Ggp_helper.php */
+/* Location: application/libraries/Ggp_helper.php */
 
