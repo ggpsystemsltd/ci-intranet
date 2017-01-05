@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Machine Booking Class
+ * Machine Booking Controller
  * 
  * @author Murray Crane <murray.crane@ggpsystems.co.uk>
- * @copyright 2013 (c) GGP Systems Limited
+ * @copyright 2016 (c) GGP Systems Limited
  * @license http://www.gnu.org/licenses/gpl.html
- * @version 1.0
+ * @version 1.3
  */
 class Machines extends CI_Controller {
 
@@ -16,11 +16,13 @@ class Machines extends CI_Controller {
 		$this->load->database();
 		$this->load->helper( 'url' );
 		$this->load->library( array( 'grocery_CRUD' ));
+		$this->load->model( array( 'Booking_model', 'Machine_model' ));
 	}
 
 	function index() {
 		$this->load->helper( array ( 'form', 'security' ));
-		$this->load->library( array( 'form_validation', 'ggpclass', 'parser' ));
+		$this->load->library( array( 'form_validation', 'ggp_helper', 'parser' ));
+		$this->load->model( array( 'Staff_model' ));
 
 		$config = array(
 			array(
@@ -49,52 +51,7 @@ class Machines extends CI_Controller {
 		if( $this->form_validation->run() == TRUE ) {
 			$this->book( $this->input->post( NULL, TRUE ) );
 		}
-		$type = array(
-			'desktop' => array(
-				'name' => 'Desktop',
-				'colour' => 'darkblue'
-			),
-			'laptop' => array(
-				'name' => 'Laptop',
-				'colour' => 'darkcyan'
-			),
-			'vm' => array(
-				'name' => 'VM',
-				'colour' => 'darkmagenta'
-			),
-			'software' => array(
-				'name' => 'Software',
-				'colour' => 'dimgrey'
-			),
-			'server' => array(
-				'name' => 'Server',
-				'colour' => 'ggpgreen'
-			),
-			'bds' => array(
-				'name' => 'Delphi',
-				'colour' => 'chocolate'
-			)
-		);
-		$backup_period = array(
-			array(
-				'name' => 'Weekly',
-				'colour' => 'darkgoldenrod'
-			),
-			array(
-				'name' => 'Bi-weekly',
-				'colour' => 'goldenrod'
-			),
-			array(
-				'name' => 'Monthly',
-				'colour' => 'gold'
-			),
-			array(
-				'name' => 'Quarterly',
-				'colour' => 'palegoldenrod'
-			)
-		);
 
-		$this->db->select( 'machine.machine_id, machine.name, machine.description, machine.os, machine.cpu, machine.ram, machine.diskspace, machine.powered, machine.rdp_sessions, machine.type, machine.location, machine.comment, machine.ipv4_address, machine.mac_address, machine.last_backup, machine.periodicity, machine.bookable' )->from( 'machine' )->where( 'machine.deleted', 0 )->order_by( 'machine.name' );
 		$order = "Machine Name Order";
 		$atts = array(
 			'class' => 'link-mailto',
@@ -111,95 +68,13 @@ class Machines extends CI_Controller {
 			'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
 		);
 		$data[ 'author_mailto' ] = safe_mailto( 'murray.crane@ggpsystems.co.uk', $data[ 'author_name' ], $atts );
-		$query = $this->db->get();
-		if( $query->num_rows() > 0 ) {
-			$i = 1;
-			foreach( $query->result_array() as $row ) {
-				$this->db->select( 'staff.firstname, staff.surname, booking.note, booking.duration, booking.start' )->from( 'booking' )->join( 'staff', 'staff.staff_id=booking.staff_id' )->like( 'booking.machine_id', '"' . $row[ 'machine_id' ] . '"' )->where( 'booking.deleted', 0 );
-				$query2 = $this->db->get();
-				if( $query2->num_rows() > 0 ) {
-					$row2 = $query2->row_array();
-					$start = explode( " ", $row2[ 'start' ] );
-					$dateNow = date( "Y-m-d" );
-					if( $dateNow == $start[ 0 ] ) {
-						$row2[ 'start' ] = $start[ 1 ];
-					}
-					$row[ 'note' ] = "<span style=\"cursor:crosshair;\" onclick=\"if(confirm('Do you want to delete this booking?')) {window.location='/index.php/machines/debook/" . $row[ 'machine_id' ] . "/'};\">" . $row2[ 'note' ] . "<br/><em>" . strtolower( $row2[ 'firstname' ] ) . strtolower( substr( $row2[ 'surname' ], 0, 1 ) ) . " - " . ($row2[ 'start' ] == "0000-00-00 00:00:00" ? "" : $row2[ 'start' ] . " for ") . $row2[ 'duration' ] . "</em></span>";
-				} else {
-					$row[ 'note' ] = NULL;
-				}
-				unset( $query2 );
-				unset( $row2 );
-				$this->db->select( 'software.name' )->from( 'software' )->where( 'software.machine_id', $row[ 'machine_id' ] );
-				$query2 = $this->db->get();
-				$software = "";
-				$software_array = array();
-				if( $query2->num_rows() > 0 ) {
-					foreach( $query2->result_array() as $row2 ) {
-						$software_array[] = $row2[ 'name' ];
-					}
-					$software = implode( ", ", $software_array );
-				}
-				unset( $query2 );
-				unset( $row2 );
-				$configuration_array = array();
-				if( $row[ 'ram' ] != "" ) {
-					$configuration_array[] = $row[ 'ram' ];
-				}
-				if( $row[ 'cpu' ] != "" ) {
-					$configuration_array[] = $row[ 'cpu' ];
-				}
-				if( $row[ 'diskspace' ] != "" ) {
-					$configuration_array[] = $row[ 'diskspace' ];
-				}
-				$configuration = implode( " | ", $configuration_array );
-				$description_array = explode( " | ", $row[ 'description' ] );
-				$further = implode( " | ", array_slice( $description_array, 2 ) );
-				$types_array = explode( ",", $row[ 'type' ] );
-				$type_string = "";
-				foreach( $types_array as $value ) {
-					$type_string .= sprintf( '<span id="sprite" style="float: right;"><img id="%s" src="/assets/images/spritesheet.png" width="0" height="1" title="%s" alt="%s" /></span>', $type[ $value ][ 'colour' ], $type[ $value ][ 'name' ], $type[ $value ][ 'name' ] );
-				}
-				if( $row[ 'location' ] == "RoadWarrior" ) {
-					$t_name = '<span style="color: green;"><strong>' . $row[ 'name' ] .'</strong></span>';
-				} elseif( $row[ 'powered' ] == '0' ) {
-					$t_name = '<span style="color: red;"><em>' . $row[ 'name' ] .'</em></span>';
-				} else {
-					$t_name = $t_name = $row[ 'name' ];
-				}
-				$data[ 'machine' ][] = array(
-					'class' => $i,
-					'name' => ($row[ 'powered' ] == '0' ? '<span style="color: red;">' . $row[ 'name' ] . '</span>' : $row[ 'name' ]) . "&nbsp;" . $type_string,
-					'os' => $row[ 'os' ],
-					'configuration' => ( $configuration != "" ? '<span style="width: 500px;">' . $configuration . '</span>' : ""),
-					'description' => $description_array[ 0 ],
-					'further' => ($further != "" ? '<span style="width: 500px;">' . $further . '</span>' : ""),
-					'backup' => ( $row[ 'last_backup' ] != "0000-00-00" ? $row[ 'last_backup' ] . '&nbsp;' . sprintf( '[%s]', $backup_period[ $row[ 'periodicity' ] ][ 'name' ][ 0 ] ) : "" ),
-					'ipv4' => ( $row[ 'ipv4_address' ] != "" ? $row[ 'ipv4_address' ] : "" ),
-					'mac' => ( $row[ 'mac_address' ] != "" ? '<span style="width: 500px;">' . $row[ 'mac_address' ] . '</span>' : "" ),
-					'software' => $software,
-					'booking' => ( $row[ 'bookable' ] == 1 ? ( $row[ 'note' ] != NULL ? $row[ 'note' ] : form_checkbox( 'machines[]', $row[ 'machine_id' ], set_checkbox( 'machines[]', $row[ 'machine_id' ] ) )) : ""),
-				);
-				($i == 1 ? $i++ : $i--);
-			}
-		}
+
+		$data[ 'machine' ] = $this->Machine_model->get_machine_list();
 
 		$data[ 'variable_pre' ] = form_open( 'machines' );
 		$data[ 'variable' ] = form_fieldset( 'Internal machine booking' );
 		$data[ 'variable' ] .= "<div style='color: red;'>" . validation_errors() . "</div>\n";
-		$this->db->select( 'staff.staff_id, staff.name, staff.start_date, staff.end_date' )->from( 'staff' )->order_by( 'staff.firstname' )->order_by( 'staff.surname' );
-		$ddarray = array( 0 => " " );
-		$query = $this->db->get();
-		if( $query->num_rows() > 0 ) {
-			foreach( $query->result_array() as $row ) {
-				if(( $row[ 'start_date' ] == "0000-00-00"
-						|| time() >= $this->ggpclass->day_start( $row[ 'start_date' ])) 
-					&& ( $row[ 'end_date' ] == "0000-00-00"
-						|| time() <= $this->ggpclass->day_end( $row[ 'end_date' ]))) {
-					$ddarray[ $row[ 'staff_id' ] ] = $row[ 'name' ];
-				}
-			}
-		}
+		$ddarray = $this->Staff_model->get_staff_list();
 		$data[ 'variable' ] .= form_label( 'Name:', 'username' );
 		$data[ 'variable' ] .= form_dropdown( 'username', $ddarray, $this->input->post( 'username' ) ) . "<br />\n";
 		$data[ 'variable' ] .= form_label( 'Note:', 'reason' );
@@ -214,6 +89,7 @@ class Machines extends CI_Controller {
 		$data[ 'variable' ] .= form_fieldset_close();
 		$data[ 'variable' ] .= form_close();
 		$data[ 'variable_post' ] = "";
+
 		$this->parser->parse( 'page_head', $data );
 		$this->parser->parse( 'machine_list', $data );
 		$this->parser->parse( 'phone_list_form', $data );
@@ -223,43 +99,35 @@ class Machines extends CI_Controller {
 	/**
 	 * Book one or more machine resources.
 	 * 
-	 * @param array $post 
+	 * @param array $p_post
 	 */
-	function book( $post = NULL ) {
-		// Process the booking request
-		if( !is_null( $post ) ) {
-			$machine = $post[ 'machines' ];
-			$staff_id = $post[ 'username' ];
-			$note = $post[ 'reason' ];
-			$duration = $post[ 'duration' ];
-			if( $post[ 'duration' ] == "Do not use" ) {
-				$datetime = "0000-00-00 00:00:00";
-			} elseif( $post[ 'start' ] != '' ) {
-				$start = explode( " ", $post[ 'start' ] );
-				$date = explode( "-", $start[ 0 ] );
-				$time = explode( ":", $start[ 1 ] );
-				unset( $start );
-				$datetime = date( "Y-m-d H:i:s", mktime( $time[ 0 ], $time[ 1 ], $time[ 2 ], $date[ 1 ], $date[ 0 ], $date[ 2 ] ) );
-				unset( $date );
-				unset( $time );
+	function book($p_post = NULL ) {
+		if( !is_null( $p_post ) ) {
+			$t_machine = $p_post[ 'machines' ];
+			$t_staff_id = $p_post[ 'username' ];
+			$t_note = $p_post[ 'reason' ];
+			$t_duration = $p_post[ 'duration' ];
+			if( $p_post[ 'duration' ] == "Do not use" ) {
+				$t_datetime = "0000-00-00 00:00:00";
+			} elseif( $p_post[ 'start' ] != '' ) {
+				$t_start = explode( " ", $p_post[ 'start' ] );
+				$t_date = explode( "-", $t_start[ 0 ] );
+				$t_time = explode( ":", $t_start[ 1 ] );
+				unset( $t_start );
+				$t_datetime = date( "Y-m-d H:i:s", mktime( $t_time[ 0 ], $t_time[ 1 ], $t_time[ 2 ], $t_date[ 1 ], $t_date[ 0 ], $t_date[ 2 ] ) );
+				unset( $t_date );
+				unset( $t_time );
 			} else {
-				$datetime = date( "Y-m-d H:i:s", time() );
+				$t_datetime = date( "Y-m-d H:i:s", time() );
 			}
-			$data = array(
-				'staff_id' => $staff_id,
-				'note' => $note,
-				'duration' => $duration,
-				'start' => $datetime,
-				'machine_id' => json_encode( $machine ),
+			$t_data = array(
+				'staff_id' => $t_staff_id,
+				'note' => $t_note,
+				'duration' => $t_duration,
+				'start' => $t_datetime,
+				'machine_id' => json_encode( $t_machine ),
 			);
-			$this->db->insert( 'booking', $data );
-			$booking_id = $this->db->insert_id();
-			$log_data = array(
-				'ip_address' => filter_input(INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
-				'booking_id' => $booking_id,
-				'operation' => "add"
-			);
-			$this->db->insert( 'booking_log', $log_data );
+			$this->Booking_model->insert_booking( $t_data );
 		}
 		redirect( current_url() );
 	}
@@ -267,32 +135,13 @@ class Machines extends CI_Controller {
 	/**
 	 * Unbook one or more machine resources
 	 * 
-	 * @param int $machine_id 
+	 * @param int $p_machine_id
 	 */
-	function debook( $machine_id = NULL ) {
-		// Process a booking hand back
-		if( !is_null( $machine_id ) ) {
-			$this->db->select( 'booking_id' );
-			$this->db->where( 'deleted', 0 );
-			$this->db->like( 'machine_id', '"' . $machine_id . '"' );
-			$query = $this->db->get( 'booking' );
-
-			foreach( $query->result() as $row ) {
-				$booking_id = $row->booking_id;
-			}
-			$data = array(
-				'deleted' => 1
-			);
-			$this->db->where( 'booking_id', $booking_id );
-			$this->db->update( 'booking', $data );
-			$log_data = array(
-				'ip_address' => filter_input(INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
-				'booking_id' => $booking_id,
-				'operation' => "delete"
-			);
-			$this->db->insert( 'booking_log', $log_data );
+	function debook($p_machine_id = NULL ) {
+		if( !is_null( $p_machine_id ) ) {
+			$this->Booking_model->update_booking( $p_machine_id );
 		}
-		redirect( "/machines" );
+		redirect( "/Machines" );
 	}
 
 	public function bookings() {
@@ -321,17 +170,13 @@ class Machines extends CI_Controller {
 	}
 
 	function _callback_machine_id( $value, $row ) {
-		unset( $row );
 		$machine_ids = json_decode( $value );
 		$machines = '';
-		foreach( $machine_ids as $machine_id ) {
-			$sql = "SELECT m.name FROM machine m WHERE m.machine_id = $machine_id";
-			$result = $this->db->query( $sql )->row();
-			$machines .= $result->name . ', ';
+		foreach( $machine_ids as  $machine_id ) {
+			$machines .= $this->Machine_model->get_name_from_id( $machine_id ) . ', ';
 		}
 		return substr( $machines, 0, -2 );
 	}
-
 }
 
 /* End of file machines.php */

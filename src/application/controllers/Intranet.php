@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Intranet Telephone Directory Controller
+ *
+ * @author Murray Crane <murray.crane@ggpsystems.co.uk>
+ * @copyright 2016 (c) GGP Systems Limited
+ * @license http://www.gnu.org/licenses/gpl.html
+ * @version 1.3
+ */
 class Intranet extends CI_Controller {
 
 	function __construct() {
@@ -12,7 +20,8 @@ class Intranet extends CI_Controller {
 
 	function index() {
 		$this->load->helper( 'form' );
-		$this->load->library( array( 'form_validation', 'ggpclass', 'parser' ));
+		$this->load->library( array( 'form_validation', 'ggp_helper', 'parser' ));
+		$this->load->model( array ( 'Intranet_model' ));
 
 		// We have noIP FQDNs for Roger, Bexhill and Vincent Road. 
 		// Do a DNS lookup and compare?
@@ -38,8 +47,6 @@ class Intranet extends CI_Controller {
 		$rules[ 'order' ] = 'required';
 		$this->form_validation->set_rules( $rules );
 
-		$this->db->select( 'staff.staff_id, staff.name, staff.display_midname, staff.start_date, staff.end_date, staff.xmpp, extensions.name AS extn,  departments.name AS dept' )->from( 'staff' )->join( 'extensions', 'extensions.extn_id = staff.extn_id' )->join( 'departments', 'departments.dept_id = staff.dept_id' );
-
 		$post = $this->input->post( NULL, TRUE );
 		if( isset( $post[ 'save' ] ) and $post[ 'save' ] == "Save directory" ) {
 			header( 'Content-type: text/html' );
@@ -50,26 +57,23 @@ class Intranet extends CI_Controller {
 		}
 		switch( $post[ 'order' ] ) {
 			case 4:
-				$this->db->order_by( 'departments.name' )->order_by( 'staff.firstname' )->order_by( 'staff.surname' )->order_by( 'extensions.name' );
 				$order = "Department Order";
 				break;
 			case 3:
-				$this->db->order_by( 'extensions.name' );
 				$order = "Extension Number Order";
 				break;
 			case 2:
-				$this->db->order_by( 'staff.surname' )->order_by( 'staff.firstname' )->order_by( 'extensions.name' );
 				$order = "Surname Order";
 				break;
 			case 1:
 			default:
-				$this->db->order_by( 'staff.firstname' )->order_by( 'staff.surname' )->order_by( 'extensions.name' );
-				$order = "Firstname Order";
-				break;
+				$order = "First Name Order";
 		}
 		$atts = array(
 			'class' => 'link-mailto',
 		);
+
+		$js = 'onchange="this.form.submit();"';
 		$data = array(
 			'intranet_title' => 'GGP Systems Ltd intranet',
 			'intranet_module' => 'Internal Telephone Directory - ' . $order,
@@ -82,48 +86,8 @@ class Intranet extends CI_Controller {
 			'remote_ip' => $s_remote_ip,
 		);
 		$data[ 'author_mailto' ] = safe_mailto( 'murray.crane@ggpsystems.co.uk', $data[ 'author_name' ], $atts );
-		$query = $this->db->get();
-		if( $query->num_rows() > 0 ) {
-			$i = 1;
-			foreach( $query->result_array() as $row ) {
-				if(( $row[ 'start_date' ] == "0000-00-00"
-						|| time() >= $this->ggpclass->day_start( $row[ 'start_date' ])) 
-					&& ( $row[ 'end_date' ] == "0000-00-00"
-						|| time() <= $this->ggpclass->day_end( $row[ 'end_date' ]))) {
-					$this->db->select( 'description, name' )->from( 'telephones' )->where( 'staff_id', $row[ 'staff_id' ] );
-					$_query = $this->db->get();
-					$row[ 'externals' ] = "";
-					if( $b_show_externals ) {
-						if( $_query->num_rows() > 0 ) {
-							foreach( $_query->result_array() as $_row ) {
-								if( !empty( $row[ 'externals' ] ) ) {
-									$row[ 'externals' ] .= "<br />";
-								}
-								$row[ 'externals' ] .= $_row[ 'description' ] . ": " . $_row[ 'name' ];
-							}
-						}
-					}
-					$data[ 'staff' ][] = array(
-						'class' => $i,
-						'extn' => $row[ 'extn' ],
-						'name' => $row[ 'name' ],
-						'externals' => $row[ 'externals' ],
-						'dept' => $row[ 'dept' ],
-						'presence' => $this->presence( $row[ 'xmpp' ]),
-					);
-					($i == 1 ? $i++ : $i--);
-				}
-			}
-		}
-
-		$this->db->select( 'name' )->from( 'departments' );
-		$query = $this->db->get();
-		if( $query->num_rows() > 0 ) {
-			foreach( $query->result_array() as $row ) {
-				$data[ 'depts' ][] = array( 'dept' => $row[ 'name' ] );
-			}
-		}
-		$js = 'onchange="this.form.submit();"';
+		$data[ 'staff' ] = $this->Intranet_model->get_staff( $post[ 'order' ], $b_show_externals );
+		$data[ 'depts' ] = $this->Intranet_model->get_departments();
 		$data[ 'variable' ] = form_open( 'intranet' );
 		$data[ 'variable' ] .= form_fieldset( 'Internal telephone directory order' );
 		$data[ 'variable' ] .= "<br />" . validation_errors();
@@ -184,40 +148,6 @@ class Intranet extends CI_Controller {
 	function crud_output( $output = null )
 	{
 		$this->load->view( 'crud_template.php', $output );
-	}
-
-	function presence( $jid = null )
-	{
-		$status_id = "dimgrey";
-
-		if( $jid != null ) {
-			$ch = curl_init( "http://svn.ggpsystems.co.uk:5280/status/$jid/text" );
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			$res = curl_exec($ch);
-			curl_close($ch);
-			if( $res !== FALSE ) {
-				switch( $res) {
-					case "away":
-					case "xa":
-						$status_id = "darkgoldenrod";
-						break;
-					case "chat":
-						$status_id = "ggpgreen";
-						break;
-					case "dnd":
-						$status_id = "darkred";
-						break;
-					case "offline":
-						$status_id = "dimgrey";
-						break;
-					case "online":
-						$status_id = "ggpgreen";
-						break;
-				}
-			}
-		}
-
-		return $status_id;
 	}
 }
 
