@@ -10,22 +10,68 @@
  */
 class Staff_model extends CI_Model
 {
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 	}
 
-	function get_staff_list()
+	public function get_staff_list()
 	{
-		$this->db->select( 'staff.staff_id, staff.name, staff.start_date, staff.end_date' )->from( 'staff' )->where( 'active', 1 )->not_like( 'work_state', 'NaN' )->order_by( 'staff.firstname' )->order_by( 'staff.surname' );
-		$t_return = array( 0 => " " );
-		$query = $this->db->get();
+		$return = array();
+		$this->db->select( 'name, firstname, surname' )->where( 'active', 1 )->where( 'work_state !=', 'NaN')->order_by( 'firstname' );
+		$query = $this->db->get( 'staff' );
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {
-				$t_return[ $row[ 'staff_id' ] ] = $row[ 'name' ];
+				$return[ strtolower( $row[ 'firstname' ] . '.' . $row[ 'surname' ] . '@ggpsystems.co.uk' )] =  $row[ 'name' ];
 			}
 		}
+		return $return;
+	}
 
-		return $t_return;
+	public function get_email_by_id( $p_id )
+	{
+		$this->db->select( 'firstname, surname' )->where( 'active', 1 )->where( 'work_state !=', 'NaN')->where( 'staff_id', $p_id );
+		$query = $this->db->get( 'staff' );
+		if( $query->num_rows() > 0 ) {
+			foreach( $query->result_array() as $row ) {
+				return strtolower( $row[ 'firstname' ] . '.' . $row[ 'surname' ] . '@ggpsystems.co.uk' );
+			}
+		}
+		return false;
+	}
+
+	public function get_id_by_email( $p_email='' )
+	{
+		if( !empty( $p_email )) {
+			// explode the firstname and surname from the email address
+			$t_username = explode( '@', $p_email )[0];
+			$t_firstname = explode( '.', $t_username )[0];
+			$t_surname = explode( '.', $t_username )[1];
+
+			// select staff_id where firstname and surname
+			$this->db->select( 'staff_id' )->where( 'active', 1 )->where( 'work_state !=', 'NaN')->like( 'firstname', $t_firstname )->like( 'surname', $t_surname );
+			$query = $this->db->get( 'staff' );
+			if( $query->num_rows() > 0 ) {
+				foreach ( $query->result_array() as $row ) {
+					return (int)$row['staff_id'];
+				}
+			}
+		}
+		return false;
+	}
+
+	public function get_name_by_id( $p_id='' )
+	{
+		if( !empty( $p_id )) {
+			// select firstname and surname where staff_id
+			$this->db->select( 'name' )->where( 'active', 1 )->where( 'work_state !=', 'NaN')->where( 'staff_id', $p_id );
+			$query = $this->db->get( 'staff' );
+			if( $query->num_rows() > 0 ) {
+				foreach ( $query->result_array() as $row ) {
+					return $row['name'];
+				}
+			}
+		}
+		return false;
 	}
 }

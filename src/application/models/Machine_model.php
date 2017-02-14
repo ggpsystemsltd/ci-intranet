@@ -4,9 +4,9 @@
  * Machine Model
  *
  * @author Murray Crane <murray.crane@ggpsystems.co.uk>
- * @copyright 2016 (c) GGP Systems Limited
+ * @copyright 2017 (c) GGP Systems Limited
  * @license http://www.gnu.org/licenses/gpl.html
- * @version 1.0
+ * @version 2.0
  */
 class Machine_model extends CI_Model
 {
@@ -63,14 +63,17 @@ class Machine_model extends CI_Model
 			)
 		);
 
-		$this->db->select( 'machine.machine_id, machine.name, machine.description, machine.os, machine.cpu, machine.ram, machine.diskspace, machine.powered, machine.rdp_sessions, machine.type, machine.location, machine.comment, machine.ipv4_address, machine.mac_address, machine.last_backup, machine.periodicity, machine.bookable' )->from( 'machine' )->where( 'machine.deleted', 0 )->order_by( 'machine.name' );
+		$t_return = array();
+
+		$this->db->select( 'machine.machine_id, machine.name, machine.description, machine.os, machine.cpu, machine.ram, 
+		machine.diskspace, machine.powered, machine.rdp_sessions, machine.type, machine.location, machine.comment, 
+		machine.ipv4_address, machine.mac_address, machine.last_backup, machine.periodicity, machine.bookable' )->
+		from( 'machine' )->where( 'machine.deleted', 0 )->order_by( 'machine.name' );
 		$query = $this->db->get();
 		if( $query->num_rows() > 0 ) {
-			$i = 1;
 			foreach( $query->result_array() as $row ) {
 				$t_note = $this->Booking_model->get_booking( $row[ 'machine_id' ] );
-
-				$software = $this->Machine_model->get_software_list( $row[ 'machine_id' ] );
+				$t_software = $this->Machine_model->get_software_list( $row[ 'machine_id' ] );
 				$configuration_array = array();
 				if( $row[ 'ram' ] != "" ) {
 					$configuration_array[] = $row[ 'ram' ];
@@ -81,35 +84,57 @@ class Machine_model extends CI_Model
 				if( $row[ 'diskspace' ] != "" ) {
 					$configuration_array[] = $row[ 'diskspace' ];
 				}
-				$configuration = implode( " | ", $configuration_array );
+				$t_configuration = implode( " | ", $configuration_array );
 				$description_array = explode( " | ", $row[ 'description' ] );
-				$further = implode( " | ", array_slice( $description_array, 2 ) );
-				$types_array = explode( ",", $row[ 'type' ] );
-				$type_string = "";
-				foreach( $types_array as $value ) {
-					$type_string .= sprintf( '<span id="sprite" style="float: right;"><img id="%s" src="/assets/images/spritesheet.png" width="0" height="1" title="%s" alt="%s" /></span>', $type[ $value ][ 'colour' ], $type[ $value ][ 'name' ], $type[ $value ][ 'name' ] );
+				$t_further = implode( " | ", array_slice( $description_array, 2 ) );
+				$t_types = "";
+				$t_types_array = explode( ",", $row[ 'type' ] );
+				sort( $t_types_array );
+				foreach( $t_types_array as $value ) {
+					$t_types .= ( !empty( $t_types )) ? ', ' : null;
+					$t_types .= $type[ $value ][ 'name' ];
 				}
 				if( $row[ 'location' ] == "RoadWarrior" ) {
-					$t_name = '<span style="color: green;"><strong>' . $row[ 'name' ] .'</strong></span>';
+					$t_class = 'class="success"';
 				} elseif( $row[ 'powered' ] == '0' ) {
-					$t_name = '<span style="color: red;"><em>' . $row[ 'name' ] .'</em></span>';
+					$t_class = 'class="danger"';
 				} else {
-					$t_name = $t_name = $row[ 'name' ];
+					$t_class = null;
 				}
+				$t_os = '';
+				$t_postfix = '';
+				if( !empty( $t_configuration )) {
+					$t_os .= '<abbr title="' . $t_configuration . '">';
+					$t_postfix = '</abbr>';
+				}
+				$t_os .= $row[ 'os' ] . $t_postfix;
+
+				$t_description = '';
+				$t_postfix = '';
+				if( !empty( $t_further )) {
+					$t_description .= '<abbr title="' . $t_further . '">';
+					$t_postfix = '</abbr>';
+				}
+				$t_description .= $description_array[ 0 ] . $t_postfix;
+
+				$t_ipv4 = '';
+				$t_postfix = '';
+				if( !empty( $row[ 'mac_address' ] )) {
+					$t_ipv4 .= '<abbr title="' . $row[ 'mac_address' ] . '">';
+					$t_postfix = '</abbr>';
+				}
+				$t_ipv4 .= $row[ 'ipv4_address' ] . $t_postfix;
+
 				$t_return[] = array(
-					'class' => $i,
-					'name' => ($row[ 'powered' ] == '0' ? '<span style="color: red;">' . $row[ 'name' ] . '</span>' : $row[ 'name' ]) . "&nbsp;" . $type_string,
-					'os' => $row[ 'os' ],
-					'configuration' => ( $configuration != "" ? '<span style="width: 500px;">' . $configuration . '</span>' : ""),
-					'description' => $description_array[ 0 ],
-					'further' => ($further != "" ? '<span style="width: 500px;">' . $further . '</span>' : ""),
-					'backup' => ( $row[ 'last_backup' ] != "0000-00-00" ? $row[ 'last_backup' ] . '&nbsp;' . sprintf( '[%s]', $backup_period[ $row[ 'periodicity' ] ][ 'name' ][ 0 ] ) : "" ),
-					'ipv4' => ( $row[ 'ipv4_address' ] != "" ? $row[ 'ipv4_address' ] : "" ),
-					'mac' => ( $row[ 'mac_address' ] != "" ? '<span style="width: 500px;">' . $row[ 'mac_address' ] . '</span>' : "" ),
-					'software' => $software,
+					'class' => $t_class,
+					'backup' => ( $row[ 'last_backup' ] != "0000-00-00" ? $row[ 'last_backup' ] . '&nbsp;' . sprintf( '[%s]', $backup_period[ $row[ 'periodicity' ] ][ 'name' ][ 0 ] ) : null ),
+					'name' => '<abbr title="' . $t_types . '">' . $row[ 'name' ] . '</abbr>',
+					'os' => $t_os,
+					'description' => $t_description,
+					'ipv4' => ( !empty( $t_ipv4 )) ? $t_ipv4 : null,
+					'software' => $t_software,
 					'booking' => ( $row[ 'bookable' ] == 1 ? ( $t_note != NULL ? $t_note : form_checkbox( 'machines[]', $row[ 'machine_id' ], set_checkbox( 'machines[]', $row[ 'machine_id' ] ) )) : ""),
 				);
-				($i == 1 ? $i++ : $i--);
 			}
 		}
 

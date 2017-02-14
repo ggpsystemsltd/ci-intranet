@@ -4,9 +4,9 @@
  * Intranet Model
  *
  * @author Murray Crane <murray.crane@ggpsystems.co.uk>
- * @copyright 2016 (c) GGP Systems Limited
+ * @copyright 2017 (c) GGP Systems Limited
  * @license http://www.gnu.org/licenses/gpl.html
- * @version 1.0
+ * @version 2.0
  */
 class Intranet_model extends CI_Model
 {
@@ -48,21 +48,18 @@ class Intranet_model extends CI_Model
 		}
 		$query = $this->db->get();
 		if( $query->num_rows() > 0 ) {
-			$i = 1;
 			foreach( $query->result_array() as $row ) {
 				if(( $row[ 'start_date' ] == "0000-00-00"
-						|| time() >= $this->ggp_helper->day_start( $row[ 'start_date' ]))
+						|| time() >= $this->day_start( $row[ 'start_date' ]))
 					&& ( $row[ 'end_date' ] == "0000-00-00"
-						|| time() <= $this->ggp_helper->day_end( $row[ 'end_date' ]))) {
+						|| time() <= $this->day_end( $row[ 'end_date' ]))) {
 					$return[] = array(
-						'class' => $i,
+						'class' => $this->get_presence( $row[ 'xmpp' ]),
 						'extn' => $row[ 'extn' ],
 						'name' => $row[ 'name' ],
 						'externals' => ($p_show_externals) ? $this->get_externals($row[ 'staff_id' ] ) : "",
 						'dept' => $row[ 'dept' ],
-						'presence' => $this->get_presence( $row[ 'xmpp' ]),
 					);
-					($i == 1 ? $i++ : $i--);
 				}
 			}
 		}
@@ -87,11 +84,9 @@ class Intranet_model extends CI_Model
 		return $t_externals;
 	}
 
-	function get_presence( $jid = null )
+	private function get_presence( $jid = null )
 	{
-		$status_id = "dimgrey";
-
-		if( ENVIRONMENT == 'production' and $jid != null ) {
+		if( $jid != null ) {
 			$ch = curl_init( "http://svn.ggpsystems.co.uk:5280/status/$jid/text" );
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			$res = curl_exec($ch);
@@ -100,24 +95,38 @@ class Intranet_model extends CI_Model
 				switch( $res) {
 					case "away":
 					case "xa":
-						$status_id = "darkgoldenrod";
+						return "warning";
 						break;
 					case "chat":
-						$status_id = "ggpgreen";
+					case "online":
+						return "success";
 						break;
 					case "dnd":
-						$status_id = "darkred";
+						return "danger";
 						break;
 					case "offline":
-						$status_id = "dimgrey";
-						break;
-					case "online":
-						$status_id = "ggpgreen";
+					default:
+						return "active";
 						break;
 				}
 			}
 		}
 
-		return $status_id;
+		return false;
+	}
+
+	private function day_start($p_date)
+	{
+		$t_date = explode("-", $p_date);
+		return mktime(0, 0, 0, $t_date[1], $t_date[2], $t_date[0]);
+	}
+
+	private function day_end($p_date)
+	{
+		$t_date = explode("-", $p_date);
+		return mktime(23, 59, 59, $t_date[1], $t_date[2], $t_date[0]);
 	}
 }
+
+/* End of file Intranet_model.php */
+/* Location: application/models/Intranet_model.php */

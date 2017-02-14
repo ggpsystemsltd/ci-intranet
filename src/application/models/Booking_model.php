@@ -7,6 +7,7 @@
  * @copyright 2016 (c) GGP Systems Limited
  * @license http://www.gnu.org/licenses/gpl.html
  * @version 1.0
+ * @todo Booking deletion confirmation is "wrong" - needs to be the new type #dialog
  */
 class Booking_model extends CI_Model
 {
@@ -26,7 +27,8 @@ class Booking_model extends CI_Model
 			if( $t_now == $t_start[ 0 ] ) {
 				$t_row[ 'start' ] = $t_start[ 1 ];
 			}
-			$t_return = "<span style=\"cursor:crosshair;\" onclick=\"if(confirm('Do you want to delete this booking?')) {window.location='/Machines/debook/" . $p_machine_id . "/'};\">" . $t_row[ 'note' ] . "<br/><em>" . strtolower( $t_row[ 'firstname' ] ) . strtolower( substr( $t_row[ 'surname' ], 0, 1 ) ) . " - " . ($t_row[ 'start' ] == "0000-00-00 00:00:00" ? "" : $t_row[ 'start' ] . " for ") . $t_row[ 'duration' ] . "</em></span>";
+			//$t_return = '<div id="delete-dialog" title="Confirm Deletion"><input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I confirm that I wish to delete the specified booking.</input></div>';
+			$t_return = "<span style=\"cursor: url(http://cur.cursors-4u.net/others/oth-3/oth226.cur), crosshair;\" onclick=\"if(confirm('Do you want to delete this booking?')) {window.location='/machines/debook/" . $p_machine_id . "/'};\">" . $t_row[ 'note' ] . "<br/><em>" . strtolower( $t_row[ 'firstname' ] ) . strtolower( substr( $t_row[ 'surname' ], 0, 1 ) ) . " - " . ($t_row[ 'start' ] == "0000-00-00 00:00:00" ? "" : $t_row[ 'start' ] . " for ") . $t_row[ 'duration' ] . "</em></span>";
 		} else {
 			$t_return = NULL;
 		}
@@ -51,15 +53,12 @@ class Booking_model extends CI_Model
 	{
 		$this->db->select( 'booking_id' )->where( 'deleted', 0 )->like( 'machine_id', '"' . $p_machine_id . '"' );
 		$query = $this->db->get( 'booking' );
-
 		foreach( $query->result() as $row ) {
 			$t_booking_id = $row->booking_id;
 		}
-		$t_data = array(
-			'deleted' => 1
-		);
+
 		$this->db->where( 'booking_id', $t_booking_id );
-		$this->db->update( 'booking', $t_data );
+		$this->db->update( 'booking', array( 'deleted' => 1 ));
 
 		$t_log_data = array(
 			'ip_address' => filter_input(INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
