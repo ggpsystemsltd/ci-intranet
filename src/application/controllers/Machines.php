@@ -4,61 +4,27 @@
  * Machine Booking Controller
  * 
  * @author Murray Crane <murray.crane@ggpsystems.co.uk>
- * @copyright 2016 (c) GGP Systems Limited
+ * @copyright 2017 (c) GGP Systems Limited
  * @license http://www.gnu.org/licenses/gpl.html
- * @version 1.3
+ * @version 2.0
  */
 class Machines extends CI_Controller {
 
-	function __construct() {
+	public function __construct() {
 		parent::__construct();
 
 		$this->load->database();
-		$this->load->helper( 'url' );
-		$this->load->library( array( 'grocery_CRUD' ));
-		$this->load->model( array( 'Booking_model', 'Machine_model' ));
 	}
 
-	function index() {
-		$this->load->helper( array ( 'form', 'security' ));
-		$this->load->library( array( 'form_validation', 'ggp_helper', 'parser' ));
-		$this->load->model( array( 'Staff_model' ));
+	public function index() {
+		$this->load->helper( array ( 'form', 'security', 'url' ));
+		$this->load->library( array( 'parser' ));
+		$this->load->model( array( 'Booking_model', 'Machine_model', 'Staff_model' ));
 
-		$config = array(
-			array(
-				'field' => 'machines[]',
-				'label' => 'Machines list',
-				'rules' => 'required'
-			),
-			array(
-				'field' => 'username',
-				'label' => 'Name',
-				'rules' => 'required|is_natural_no_zero'
-			),
-			array(
-				'field' => 'reason',
-				'label' => 'Note',
-				'rules' => 'required|trim'
-			),
-			array(
-				'field' => 'duration',
-				'label' => 'Estimated Duration',
-				'rules' => 'required|trim'
-			)
-		);
-		$this->form_validation->set_message( 'is_natural_no_zero', 'The %s field must not be blank.' );
-		$this->form_validation->set_rules( $config );
-		if( $this->form_validation->run() == TRUE ) {
-			$this->book( $this->input->post( NULL, TRUE ) );
-		}
-
-		$order = "Machine Name Order";
-		$atts = array(
-			'class' => 'link-mailto',
-		);
 		$data = array(
-			'intranet_title' => 'GGP Systems Ltd intranet',
-			'intranet_module' => 'Internal Machine Directory - ' . $order,
+			'intranet_title' => 'Machine Directory (GGP intranet)',
+			'intranet_heading' => 'Internal Machine Directory',
+			'intranet_secondary' => date( 'd-m-Y' ),
 			'intranet_user' => filter_input( INPUT_SERVER, 'INTRANET_USER' ),
 			'intranet_pass' => filter_input( INPUT_SERVER, 'INTRANET_PASS' ),
 			'author_name' => 'Murray Crane',
@@ -66,70 +32,109 @@ class Machines extends CI_Controller {
 			'keywords' => 'computer directory, machine directory',
 			'refresh' => '<meta http-equiv="refresh" content="120" />',
 			'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
+			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane',
+				array( 'class' => 'link-mailto' )),
+			'style' => '<link rel="stylesheet" media="screen" href="' . base_url( '/assets/style/jquery-ui-timepicker-addon.css' ) . '" type="text/css" />',
+			'javascript' => '<script src="' . base_url( '/assets/js/jquery-ui-timepicker-addon.js' ) . '" type="text/javascript"></script>
+	<script src="' . base_url( '/assets/js/machines.js' ) . '" type="text/javascript"></script>',
 		);
-		$data[ 'author_mailto' ] = safe_mailto( 'murray.crane@ggpsystems.co.uk', $data[ 'author_name' ], $atts );
 
-		$data[ 'machine' ] = $this->Machine_model->get_machine_list();
+		$t_body_data['data'] = '			<form action="/machines/book" method="post" id="machine-form" class="form-horizontal" accept-charset="utf-8">';
 
-		$data[ 'variable_pre' ] = form_open( 'machines' );
-		$data[ 'variable' ] = form_fieldset( 'Internal machine booking' );
-		$data[ 'variable' ] .= "<div style='color: red;'>" . validation_errors() . "</div>\n";
-		$ddarray = $this->Staff_model->get_staff_list();
-		$data[ 'variable' ] .= form_label( 'Name:', 'username' );
-		$data[ 'variable' ] .= form_dropdown( 'username', $ddarray, $this->input->post( 'username' ) ) . "<br />\n";
-		$data[ 'variable' ] .= form_label( 'Note:', 'reason' );
-		$data[ 'variable' ] .= form_input( 'reason', xss_clean(set_value( 'reason' ))) . "<br />\n";
-		$data[ 'variable' ] .= form_label( 'Starting:', 'start' );
-		$data[ 'variable' ] .= "<input name=\"start\" type=\"text\" id=\"start\" />\n";
-		$data[ 'variable' ] .= "<a href=\"javascript:NewCal('start','ddMMyyyy', true, 24)\"><img src=\"/assets/js/cal.gif\" alt=\"\" width=\"16\" height=\"16\" /></a><br />\n";
-		$data[ 'variable' ] .= form_label( 'Est. duration:', 'duration' );
-		$data[ 'variable' ] .= form_input( 'duration', xss_clean(set_value( 'duration' ))) . "<br />\n";
-		$data[ 'variable' ] .= form_label( "Add booking:", 'mysubmit' );
-		$data[ 'variable' ] .= form_submit( 'mysubmit', ' Confirm ' );
-		$data[ 'variable' ] .= form_fieldset_close();
-		$data[ 'variable' ] .= form_close();
-		$data[ 'variable_post' ] = "";
+		// Machine table
+		$t_table_data[ 'title' ] = '';
+		$t_table_data[ 'class' ] = 'col-md-12';
+		$t_table_data[ 'head' ] = array(
+			0 => array( 'class' => '', 'column' => 'Name' ),
+			1 => array( 'class' => '', 'column' => 'Last Backup' ),
+			2 => array( 'class' => '', 'column' => 'Operating System' ),
+			3 => array( 'class' => '', 'column' => 'Description' ),
+			4 => array( 'class' => '', 'column' => 'IP Address' ),
+			5 => array( 'class' => '', 'column' => 'Third Party Software' ),
+			6 => array( 'class' => '', 'column' => 'Booking' ),
+		);
+		$t_machines = $this->Machine_model->get_machine_list();
+		foreach( $t_machines as $t_machine ) {
+			$t_table_data[ 'row' ][] = array('column' => array(
+				0 => array( 'class' => $t_machine[ 'class' ], 'value' => $t_machine[ 'name' ]),
+				1 => array( 'class' => '', 'value' => $t_machine[ 'backup' ]),
+				2 => array( 'class' => '', 'value' => $t_machine[ 'os' ]),
+				3 => array( 'class' => '', 'value' => $t_machine[ 'description' ]),
+				4 => array( 'class' => '', 'value' => $t_machine[ 'ipv4' ]),
+				5 => array( 'class' => '', 'value' => $t_machine[ 'software' ]),
+				6 => array( 'class' => '', 'value' => $t_machine[ 'booking' ]),
+			),
+			);
+		}
+		$t_table_data[ 'updated' ] = date( 'y-m-d H:i:s' );
 
-		$this->parser->parse( 'page_head', $data );
-		$this->parser->parse( 'machine_list', $data );
-		$this->parser->parse( 'phone_list_form', $data );
-		$this->parser->parse( 'page_foot', $data );
+		// Booking form
+		$t_users = $this->Staff_model->get_staff_list();
+		$t_form_data[ 'variable' ] = '		<div id="legend" class="btn btn-default clearfix">Book resources</div>
+		<div class="form-content row" style="display: none;">
+				<div class="form-group">
+					<label class="col-sm-2 control-label">Select user</label>
+					<div class="col-sm-4">' . PHP_EOL;
+		$t_form_data[ 'variable' ] .= form_dropdown( 'user', $t_users, '', array( 'id' => 'name', 'class' => 'form-control' ));
+		$t_form_data[ 'variable' ] .= '					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">Note</label>
+					<div class="col-sm-4">
+						<input type="text" id="note" name="note" class="form-control" placeholder="Explanatory note">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">Start</label>
+					<div class="col-sm-4 input-group" style="padding-left: 15px; padding-right: 15px;">
+						<input type="text" id="start-date" name="start_date" class="form-control datetime-picker" placeholder="Start date">
+						<span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">Duration</label>
+					<div class="col-sm-4">
+						<input type="text" id="duration" name="duration" class="form-control" placeholder="Estimated duration">
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-4 col-sm-offset-2">
+						<button type="button" id="submit-btn" name="save" class="btn btn-success">Submit</button>
+						<button type="reset" id="cancel-btn" name="cancel" class="btn btn-danger">Cancel</button>
+					</div>
+				</div>
+			</form>
+			<div id="submit-dialog" title="Confirm Request"><input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I confirm that I wish to request the specified resource.</input></div>
+		</div>' . PHP_EOL;
+		$t_form_data[ 'variable_post' ] = '';
+
+		$this->parser->parse( 'header', $data );
+		$this->parser->parse( 'inject', $t_body_data );
+		$this->parser->parse( 'row-start', array() );
+		$this->parser->parse( 'table', $t_table_data );
+		$this->parser->parse( 'row-stop', array() );
+		$this->parser->parse( 'form', $t_form_data );
+		$this->parser->parse( 'footer', $data );
 	}
 
 	/**
 	 * Book one or more machine resources.
-	 * 
-	 * @param array $p_post
 	 */
-	function book($p_post = NULL ) {
-		if( !is_null( $p_post ) ) {
-			$t_machine = $p_post[ 'machines' ];
-			$t_staff_id = $p_post[ 'username' ];
-			$t_note = $p_post[ 'reason' ];
-			$t_duration = $p_post[ 'duration' ];
-			if( $p_post[ 'duration' ] == "Do not use" ) {
-				$t_datetime = "0000-00-00 00:00:00";
-			} elseif( $p_post[ 'start' ] != '' ) {
-				$t_start = explode( " ", $p_post[ 'start' ] );
-				$t_date = explode( "-", $t_start[ 0 ] );
-				$t_time = explode( ":", $t_start[ 1 ] );
-				unset( $t_start );
-				$t_datetime = date( "Y-m-d H:i:s", mktime( $t_time[ 0 ], $t_time[ 1 ], $t_time[ 2 ], $t_date[ 1 ], $t_date[ 0 ], $t_date[ 2 ] ) );
-				unset( $t_date );
-				unset( $t_time );
-			} else {
-				$t_datetime = date( "Y-m-d H:i:s", time() );
-			}
-			$t_data = array(
-				'staff_id' => $t_staff_id,
-				'note' => $t_note,
-				'duration' => $t_duration,
-				'start' => $t_datetime,
-				'machine_id' => json_encode( $t_machine ),
-			);
-			$this->Booking_model->insert_booking( $t_data );
-		}
-		redirect( current_url() );
+	public function book() {
+		$this->load->helper( array ( 'url' ));
+		$this->load->model( array( 'Booking_model', 'Staff_model' ));
+
+		$t_booking_data = array(
+			'staff_id' => $this->Staff_model->get_id_by_email( $this->input->post( 'user', true )),
+			'note' => $this->input->post( 'note', true ),
+			'duration' => $this->input->post( 'duration', true ),
+			'start' => ( $this->input->post( 'duration', true ) != "Do not use" ) ?
+				$this->input->post( 'start_date', true ) : '0000-00-00 00:00:00',
+			'machine_id' => json_encode( $this->input->post( 'machines', true )),
+		);
+		$this->Booking_model->insert_booking( $t_booking_data );
+		$t_uri = '/'. explode( '/', uri_string() )[0];
+		redirect( $t_uri );
 	}
 
 	/**
@@ -137,11 +142,15 @@ class Machines extends CI_Controller {
 	 * 
 	 * @param int $p_machine_id
 	 */
-	function debook($p_machine_id = NULL ) {
+	public function debook($p_machine_id = NULL ) {
+		$this->load->helper( array ( 'url' ));
+		$this->load->model( array( 'Booking_model' ));
+
 		if( !is_null( $p_machine_id ) ) {
 			$this->Booking_model->update_booking( $p_machine_id );
 		}
-		redirect( "/Machines" );
+		$t_uri = '/'. explode( '/', uri_string() )[0];
+		redirect( $t_uri );
 	}
 
 	public function bookings() {
@@ -157,7 +166,9 @@ class Machines extends CI_Controller {
 		$this->crud_output( $output );
 	}
 
-	public function crud() {
+	public function set() {
+		$this->load->library( array( 'grocery_CRUD' ));
+
 		$this->grocery_crud->set_table( 'machine' );
 		$this->grocery_crud->set_subject( 'Machine' );
 
@@ -165,11 +176,11 @@ class Machines extends CI_Controller {
 		$this->crud_output( $output );
 	}
 
-	function crud_output( $output = null ) {
+	private function crud_output( $output = null ) {
 		$this->load->view( 'crud_template.php', $output );
 	}
 
-	function _callback_machine_id( $value, $row ) {
+	private function _callback_machine_id( $value, $row ) {
 		$machine_ids = json_decode( $value );
 		$machines = '';
 		foreach( $machine_ids as  $machine_id ) {
@@ -179,5 +190,5 @@ class Machines extends CI_Controller {
 	}
 }
 
-/* End of file machines.php */
-/* Location: ./system/application/controllers/machines.php */
+/* End of file Machines.php */
+/* Location: ./application/controllers/Machines.php */
