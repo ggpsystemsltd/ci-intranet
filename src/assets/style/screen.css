@@ -1,0 +1,33 @@
+.link-http {
+    background: url("../images/external.gif") center right no-repeat;
+    padding-right: 13px;
+}
+
+.link-https {
+    background: url("../images/lock_icon.gif") center right no-repeat;
+    padding-right: 16px;
+}
+
+.link-mailto {
+    background: url("../images/mail_icon.gif") center right no-repeat;
+    padding-right: 18px;
+}
+
+.link-news {
+    background: url("../images/news_icon.gif") center right no-repeat;
+    padding-right: 18px;
+}
+
+.link-ftp {
+    background: url("../images/file_icon.gif") center right no-repeat;
+    padding-right: 18px;
+}
+
+.link-irc {
+    background: url("../images/discussionitem_icon.gif") center right no-repeat;
+    padding-right: 18px;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
