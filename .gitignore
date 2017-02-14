@@ -82,3 +82,4 @@ Temporary Items
 !*/cache/.htaccess
 
 */logs/*.log
+/docker/mysql/*.sql
