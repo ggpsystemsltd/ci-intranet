@@ -11,7 +11,7 @@
 				</thead>
 				<tbody>
 					{row}
-					<tr>
+					<tr {class}>
 						{column}
 						<td {class}>{value}</td>
 						{/column}
