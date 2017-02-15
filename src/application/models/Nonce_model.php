@@ -1,31 +1,18 @@
 <?php
 
+/**
+ * Nonce Model
+ *
+ * @author Murray Crane <murray.crane@ggpsystems.co.uk>
+ * @copyright 2017 (c) GGP Systems Limited
+ * @license http://www.gnu.org/licenses/gpl.html
+ * @version 2.0
+ */
 class Nonce_model extends CI_Model
 {
 	function __construct()
 	{
 		parent::__construct();
-	}
-
-	function get_attendance()
-	{
-		$return = array();
-		$this->db->select( 'staff.name, staff.work_state' )->from( 'staff' )->where( 'staff.active', 1 )->where( 'staff.work_state !=', 'NaN')->order_by( 'staff.firstname' );
-		$query = $this->db->get();
-		if( $query->num_rows() > 0 ) {
-			$i = 1;
-			foreach( $query->result_array() as $row ) {
-				$return[] = array(
-					'class' => $i,
-					'name' => $row[ 'name' ],
-					'attclass' => preg_replace('/\s/', '', strtolower($row[ 'work_state' ])),
-					'attendance' => $row[ 'work_state' ],
-				);
-				($i == 1 ? $i++ : $i--);
-			}
-		}
-
-		return $return;
 	}
 
 	public function get_crc32( $p_id = '', $p_data = '', $p_storeNonce = false )
@@ -41,9 +28,9 @@ class Nonce_model extends CI_Model
 	public function verify_crc32( $p_id = '', $p_cnonce = '', $p_data = '' )
 	{
 		$t_hash = $this->select_crc32( $p_id ); // Get the hash out of the db, immediately deleting it from the DB
-		$t_testHash = hash( 'crc32b', $p_cnonce . $p_data );
+		$t_test_hash = hash( 'crc32b', $p_cnonce . $p_data );
 
-		return $t_testHash == $t_hash;
+		return $t_test_hash == $t_hash;
 	}
 
 	private function store_crc32( $p_id, $p_nonce )
@@ -59,16 +46,17 @@ class Nonce_model extends CI_Model
 	{
 		$t_return = false;
 
-		// Select the nonce, THEN DELETE IT FROM THE REQUEST!!!
-		$this->db->select( 'nonce' )->where( 'holiday_id', $p_id );
+		// Select the nonce, THEN DELETE ITT!!!
+		$this->db->select( 'nonce' );
+		$this->db->where( 'holiday_id', $p_id );
 		$query = $this->db->get( 'holidays' );
 		if( $query->num_rows() > 0 ) {
 			foreach ( $query->result_array() as $row ) {
 				$t_return = $row[ 'nonce' ];
 			}
 		}
-		//$this->db->where( 'holiday_id', $p_id );
-		//$this->db->update( 'holidays', array( 'nonce' => '' );
+		$this->db->where( 'holiday_id', $p_id );
+		$this->db->update( 'holidays', array( 'nonce' => '' ));
 
 		return $t_return;
 	}
@@ -83,3 +71,6 @@ class Nonce_model extends CI_Model
 		return $t_return;
 	}
 }
+
+/* End of file Nonce_model.php */
+/* Location: application/models/Nonce_model.php */

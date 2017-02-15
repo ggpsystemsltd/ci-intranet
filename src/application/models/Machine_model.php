@@ -67,9 +67,10 @@ class Machine_model extends CI_Model
 
 		$this->db->select( 'machine.machine_id, machine.name, machine.description, machine.os, machine.cpu, machine.ram, 
 		machine.diskspace, machine.powered, machine.rdp_sessions, machine.type, machine.location, machine.comment, 
-		machine.ipv4_address, machine.mac_address, machine.last_backup, machine.periodicity, machine.bookable' )->
-		from( 'machine' )->where( 'machine.deleted', 0 )->order_by( 'machine.name' );
-		$query = $this->db->get();
+		machine.ipv4_address, machine.mac_address, machine.last_backup, machine.periodicity, machine.bookable' );
+		$this->db->where( 'machine.deleted', 0 );
+		$this->db->order_by( 'machine.name' );
+		$query = $this->db->get( 'machine' );
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {
 				$t_note = $this->Booking_model->get_booking( $row[ 'machine_id' ] );
@@ -143,14 +144,16 @@ class Machine_model extends CI_Model
 
 	function get_name_from_id( $machine_id )
 	{
-		$this->db->select( 'machine.name' )->from( 'machine' )->where( 'machine.machine_id', $machine_id);
-		return $this->db->get()->row()->name;
+		$this->db->select( 'machine.name' );
+		$this->db->where( 'machine.machine_id', $machine_id);
+		return $this->db->get( 'machine' )->row()->name;
 	}
 
 	function get_software_list( $p_machine_id )
 	{
-		$this->db->select( 'software.name' )->from( 'software' )->where( 'software.machine_id', $p_machine_id );
-		$t_query = $this->db->get();
+		$this->db->select( 'software.name' );
+		$this->db->where( 'software.machine_id', $p_machine_id );
+		$t_query = $this->db->get( 'software' );
 		if ( $t_query->num_rows() > 0 ) {
 			foreach( $t_query->result_array() as $t_row ) {
 				$t_software_array[] = $t_row[ 'name' ];
@@ -163,3 +166,6 @@ class Machine_model extends CI_Model
 		return $t_software_list;
 	}
 }
+
+/* End of file Machine_model.php */
+/* Location: application/models/Machine_model.php */

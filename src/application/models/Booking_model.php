@@ -6,8 +6,7 @@
  * @author Murray Crane <murray.crane@ggpsystems.co.uk>
  * @copyright 2016 (c) GGP Systems Limited
  * @license http://www.gnu.org/licenses/gpl.html
- * @version 1.0
- * @todo Booking deletion confirmation is "wrong" - needs to be the new type #dialog
+ * @version 2.0
  */
 class Booking_model extends CI_Model
 {
@@ -16,10 +15,14 @@ class Booking_model extends CI_Model
 		parent::__construct();
 	}
 
+	// @todo Booking deletion confirmation is "wrong" - needs to be the new type #dialog
 	function get_booking( $p_machine_id )
 	{
-		$this->db->select( 'staff.firstname, staff.surname, booking.note, booking.duration, booking.start' )->from( 'booking' )->join( 'staff', 'staff.staff_id=booking.staff_id' )->like( 'booking.machine_id', '"' . $p_machine_id . '"' )->where( 'booking.deleted', 0 );
-		$t_query = $this->db->get();
+		$this->db->select( 'staff.firstname, staff.surname, booking.note, booking.duration, booking.start' );
+		$this->db->join( 'staff', 'staff.staff_id=booking.staff_id' );
+		$this->db->like( 'booking.machine_id', '"' . $p_machine_id . '"' );
+		$this->db->where( 'booking.deleted', 0 );
+		$t_query = $this->db->get( 'booking' );
 		if( $t_query->num_rows() > 0 ) {
 			$t_row = $t_query->row_array();
 			$t_start = explode( " ", $t_row[ 'start' ] );
@@ -51,7 +54,9 @@ class Booking_model extends CI_Model
 
 	function update_booking( $p_machine_id )
 	{
-		$this->db->select( 'booking_id' )->where( 'deleted', 0 )->like( 'machine_id', '"' . $p_machine_id . '"' );
+		$this->db->select( 'booking_id' );
+		$this->db->where( 'deleted', 0 );
+		$this->db->like( 'machine_id', '"' . $p_machine_id . '"' );
 		$query = $this->db->get( 'booking' );
 		foreach( $query->result() as $row ) {
 			$t_booking_id = $row->booking_id;
@@ -73,3 +78,6 @@ class Booking_model extends CI_Model
 		$this->db->insert( 'booking_log', $log_data );
 	}
 }
+
+/* End of file Booking_model.php */
+/* Location: application/models/Booking_model.php */

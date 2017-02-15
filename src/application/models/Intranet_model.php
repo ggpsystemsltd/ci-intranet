@@ -18,8 +18,8 @@ class Intranet_model extends CI_Model
 	function get_departments()
 	{
 		$return = array();
-		$this->db->select( 'name' )->from( 'departments' );
-		$query = $this->db->get();
+		$this->db->select( 'name' );
+		$query = $this->db->get( 'departments' );
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {
 				$return[] = array( 'dept' => $row[ 'name' ] );
@@ -31,22 +31,32 @@ class Intranet_model extends CI_Model
 	function get_staff( $p_order = 1, $p_show_externals = FALSE )
 	{
 		$return = array();
-		$this->db->select( 'staff.staff_id, staff.name, staff.display_midname, staff.start_date, staff.end_date, staff.xmpp, extensions.name AS extn,  departments.name AS dept' )->from( 'staff' )->join( 'extensions', 'extensions.extn_id = staff.extn_id' )->join( 'departments', 'departments.dept_id = staff.dept_id' );
+		$this->db->select( 'staff.staff_id, staff.name, staff.display_midname, staff.start_date, staff.end_date, 
+			staff.xmpp, extensions.name AS extn,  departments.name AS dept' );
+		$this->db->join( 'extensions', 'extensions.extn_id = staff.extn_id' );
+		$this->db->join( 'departments', 'departments.dept_id = staff.dept_id' );
 		switch( $p_order ) {
 			case 4:
-				$this->db->order_by( 'departments.name' )->order_by( 'staff.firstname' )->order_by( 'staff.surname' )->order_by( 'extensions.name' );
+				$this->db->order_by( 'departments.name' );
+				$this->db->order_by( 'staff.firstname' );
+				$this->db->order_by( 'staff.surname' );
+				$this->db->order_by( 'extensions.name' );
 				break;
 			case 3:
 				$this->db->order_by( 'extensions.name' );
 				break;
 			case 2:
-				$this->db->order_by( 'staff.surname' )->order_by( 'staff.firstname' )->order_by( 'extensions.name' );
+				$this->db->order_by( 'staff.surname' );
+				$this->db->order_by( 'staff.firstname' );
+				$this->db->order_by( 'extensions.name' );
 				break;
 			case 1:
 			default:
-				$this->db->order_by( 'staff.firstname' )->order_by( 'staff.surname' )->order_by( 'extensions.name' );
+				$this->db->order_by( 'staff.firstname' );
+				$this->db->order_by( 'staff.surname' );
+				$this->db->order_by( 'extensions.name' );
 		}
-		$query = $this->db->get();
+		$query = $this->db->get( 'staff' );
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {
 				if(( $row[ 'start_date' ] == "0000-00-00"
@@ -69,8 +79,9 @@ class Intranet_model extends CI_Model
 
 	function get_externals( $p_staff_id )
 	{
-		$this->db->select( 'description, name' )->from( 'telephones' )->where( 'staff_id', $p_staff_id );
-		$query = $this->db->get();
+		$this->db->select( 'description, name' );
+		$this->db->where( 'staff_id', $p_staff_id );
+		$query = $this->db->get( 'telephones' );
 		$t_externals = "";
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {

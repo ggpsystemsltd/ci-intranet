@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * Holiday Model
+ *
+ * @author Murray Crane <murray.crane@ggpsystems.co.uk>
+ * @copyright 2017 (c) GGP Systems Limited
+ * @license http://www.gnu.org/licenses/gpl.html
+ * @version 2.0
+ */
 class Holiday_model  extends CI_Model
 {
 	function __construct()
@@ -29,13 +38,14 @@ class Holiday_model  extends CI_Model
 
 	function get_last_update()
 	{
-		$this->db->select_max( 'updated' )->from( 'holidays' );
-		return $this->db->get()->row()->updated;
+		$this->db->select_max( 'updated' );
+		return $this->db->get( 'holidays' )->row()->updated;
 	}
 
 	function get_holiday( $p_id )
 	{
-		$this->db->select( 'holiday_id, staff_id, start, end, holiday_type, note, confirmed, approved' )->where( 'holiday_id', $p_id );
+		$this->db->select( 'holiday_id, staff_id, start, end, holiday_type, note, confirmed, approved' );
+		$this->db->where( 'holiday_id', $p_id );
 		$query = $this->db->get( 'holidays' );
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {
@@ -72,3 +82,6 @@ class Holiday_model  extends CI_Model
 		$this->db->delete( 'holidays' );
 	}
 }
+
+/* End of file Holiday_model.php */
+/* Location: application/models/Holiday_model.php */
