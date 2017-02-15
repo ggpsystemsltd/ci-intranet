@@ -7,7 +7,6 @@
  * @copyright 2017 (c) GGP Systems Limited
  * @license http://www.gnu.org/licenses/gpl.html
  * @version 2.0
- * @todo All the email functions are still outputting debug info
  */
 class Holidays extends CI_Controller
 {
@@ -70,13 +69,13 @@ class Holidays extends CI_Controller
 			1 => array( 'column' => 'Dates'),
 		);
 		if( empty( $t_holidays )) {
-			$t_holidays_data[ 'row' ][] = array( 'column' => array(
+			$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => ''),
 				1 => array( 'class' => '', 'value' => '')),
 			);
 		} else {
 			foreach( $t_holidays as $t_holiday ) {
-				$t_holidays_data[ 'row' ][] = array( 'column' => array(
+				$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 					0 => array( 'class' => '', 'value' => $t_holiday[ 'name' ]),
 					1 => array( 'class' => 'class="' . $t_holiday[ 'class' ] . '"', 'value' => $t_holiday[ 'dates' ])),
 				);
@@ -165,44 +164,38 @@ class Holidays extends CI_Controller
 		$this->load->model( array( 'Staff_model' ));
 
 		// Possible post values: user (email address), start_date/end_date (date), start_type/end_type (am/pm/full), note (text)
-		// @todo No need to create $post, can just use input->post directly on each key
-		$post = $this->input->post( NULL, TRUE );
-
 		$t_request = array();
-		if( isset( $post[ 'user' ])) {
-			$t_request[ 'email' ] = strtolower( $post[ 'user' ] );
-			$t_request[ 'staff_id' ] = $this->Staff_model->get_id_by_email( $post[ 'user' ] );
-		}
-		if( isset( $post[ 'start_date' ])) {
-			$t_request[ 'start' ] = $post[ 'start_date' ];
-		}
-		if( isset( $post[ 'end_date' ])) {
-			$t_request[ 'end' ] = $post[ 'end_date' ];
-		} else {
+		$t_request[ 'email' ] = strtolower( $this->input->post( 'user', true ));
+		$t_request[ 'staff_id' ] = $this->Staff_model->get_id_by_email( $this->input->post( 'user', true ));
+		$t_request[ 'start' ] = $this->input->post( 'start_date', true );
+		$t_request[ 'end' ] = $this->input->post( 'end_date', true );
+		$t_start_type = $this->input->post( 'start_type', true );
+		$t_end_type = $this->input->post( 'end_type', true );
+		if( is_null( $t_request[ 'end' ])) {
 			$t_request[ 'end' ] = $t_request[ 'start' ];
 		}
 		if( $t_request[ 'start' ] == $t_request['end'] ) {
-			if( !empty( $post[ 'start_type' ] )) {
-				switch ( $post[ 'start_type' ]) {
+			if( !is_null( $t_start_type )) {
+				switch ( $t_start_type ) {
 					case 'am':
 						$t_request['holiday_type'] = "Half Day (AM)";
-						$post[ 'end_type' ] = 'am';
+						$t_end_type = 'am';
 						break;
 					case 'pm':
 						$t_request['holiday_type'] = "Half Day (PM)";
-						$post[ 'end_type' ] = 'full';
+						$t_end_type = 'full';
 						break;
 					case 'full':
 						$t_request['holiday_type'] = "Single Day";
-						$post[ 'end_type' ] = 'full';
+						$t_end_type = 'full';
 						break;
 				}
 			}
 		} else {
 			$t_request['holiday_type'] = "Multiple Days";
 		}
-		if( isset( $post[ 'start_type' ])) {
-			switch( $post[ 'start_type' ]) {
+		if( !is_null( $t_start_type )) {
+			switch( $t_start_type ) {
 				case 'am':
 				case 'full':
 					$t_request[ 'start' ] .= " 09:00:00";
@@ -212,8 +205,8 @@ class Holidays extends CI_Controller
 					break;
 			}
 		}
-		if( isset( $post[ 'end_type' ])) {
-			switch( $post[ 'end_type' ]) {
+		if( !is_null( $t_end_type )) {
+			switch( $t_end_type ) {
 				case 'am':
 					$t_request[ 'end' ] .= " 13:00:00";
 					break;
@@ -222,9 +215,8 @@ class Holidays extends CI_Controller
 					break;
 			}
 		}
-		if( !empty( $post[ 'note' ] )) {
-			$t_request[ 'note' ] = $post[ 'note' ];
-		} else {
+		$t_request[ 'note' ] = $this->input->post( 'note', true );
+		if( is_null( $t_request[ 'note' ])) {
 			$t_request[ 'note' ] = '';
 		}
 

@@ -55,7 +55,7 @@ class Machines extends CI_Controller {
 		);
 		$t_machines = $this->Machine_model->get_machine_list();
 		foreach( $t_machines as $t_machine ) {
-			$t_table_data[ 'row' ][] = array('column' => array(
+			$t_table_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => $t_machine[ 'class' ], 'value' => $t_machine[ 'name' ]),
 				1 => array( 'class' => '', 'value' => $t_machine[ 'backup' ]),
 				2 => array( 'class' => '', 'value' => $t_machine[ 'os' ]),

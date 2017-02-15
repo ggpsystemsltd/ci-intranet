@@ -7,7 +7,6 @@
  * @copyright 2017 (c) GGP Systems Limited
  * @license http://www.gnu.org/licenses/gpl.html
  * @version 2.0
- * @todo Add a form to select the download groups
  */
 class Download_log extends CI_Controller
 {
@@ -56,7 +55,7 @@ class Download_log extends CI_Controller
 		$t_summary_by_user = array();
 		$t_summary_by_file = array();
 		foreach( $t_downloads as $t_download ) {
-			$t_table_data[ 'row' ][] = array( 'column' => array(
+			$t_table_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 					0 => array( 'class' => '', 'value' => $t_download[ 'date' ]),
 					1 => array( 'class' => '', 'value' => $t_download[ 'user_email' ]),
 					2 => array( 'class' => '', 'value' => $t_download[ 'title' ])),
@@ -84,7 +83,7 @@ class Download_log extends CI_Controller
 			1 => array( 'class' => '', 'column' => 'Downloads' ),
 			);
 		foreach( $t_summary_by_user as $key => $value ) {
-			$t_user_summary[ 'row' ][] = array( 'column' => array(
+			$t_user_summary[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => $key ),
 				1 => array( 'class' => '', 'value' => $value )),
 			);
@@ -98,7 +97,7 @@ class Download_log extends CI_Controller
 			1 => array( 'class' => '', 'column' => 'Downloads' ),
 		);
 		foreach( $t_summary_by_file as $key => $value ) {
-			$t_file_summary[ 'row' ][] = array( 'column' => array(
+			$t_file_summary[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => $key ),
 				1 => array( 'class' => '', 'value' => $value )),
 			);
@@ -135,4 +134,4 @@ class Download_log extends CI_Controller
 }
 
 /* End of file Download_log.php */
-/* Location: ./application/controllers/Download_log.php */
+/* Location: application/controllers/Download_log.php */

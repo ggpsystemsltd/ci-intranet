@@ -46,11 +46,11 @@ class Attendance extends CI_Controller {
 
         $attendance_classes = array(
         	'on-site' => 'success',
-			'off-site' => 'active hidden-print',
-			'travelling' => 'active hidden-print',
-			'not-working' => 'danger hidden-print',
-			'vacation' => 'warning hidden-print',
-			'sick' => 'info hidden-print',
+			'off-site' => 'active',
+			'travelling' => 'active',
+			'not-working' => 'danger',
+			'vacation' => 'warning',
+			'sick' => 'info',
 		);
 
         $data = array(
@@ -79,30 +79,39 @@ class Attendance extends CI_Controller {
 		);
 		$t_attendance = $this->Attendance_model->get_attendance();
 		foreach( $t_attendance as $t_staff ) {
-			$t_attendance_data[ 'row' ][] = array( 'column' => array(
-				0 => array( 'class' => '', 'value' => $t_staff[ 'name' ]),
-				1 => array( 'class' => 'class="' . $attendance_classes[ $t_staff[ 'class' ]] . '"', 'value' => $t_staff[ 'attendance' ])),
-			);
+			if( $t_staff[ 'class' ] == 'on-site' ) {
+				$t_attendance_data[ 'row' ][] = array( 'class' => '', 'column' => array(
+					0 => array( 'class' => '', 'value' => $t_staff[ 'name' ]),
+					1 => array( 'class' => 'class="' . $attendance_classes[ $t_staff[ 'class' ]] . '"',
+						'value' => $t_staff[ 'attendance' ])),
+				);
+			} else {
+				$t_attendance_data[ 'row' ][] = array( 'class' => 'class="hidden-print"', 'column' => array(
+					0 => array( 'class' => '', 'value' => $t_staff[ 'name' ]),
+					1 => array( 'class' => 'class="' . $attendance_classes[ $t_staff[ 'class' ]] . '"',
+						'value' => $t_staff[ 'attendance' ])),
+				);
+			}
 		}
 
 		// Vacations table - array will be empty if no holidays
-		$t_holidays = $this->Holiday_model->get_holidays_this_week();
 		$t_display_holidays = true;
-		$t_holidays_data[ 'title' ] = '<h2>Current/upcoming holidays</h2>' . PHP_EOL;
-		$t_holidays_data[ 'class' ] = 'col-md-6';
-		$t_holidays_data[ 'head' ] = array(
-			0 => array( 'column' => 'Name'),
-			1 => array( 'column' => 'Dates'),
-		);
-		if( empty( $t_holidays )) {
-			$t_display_holidays = false;
-		} else {
+		$t_holidays = $this->Holiday_model->get_holidays_this_week();
+		if( !empty( $t_holidays )) {
+			$t_holidays_data[ 'class' ] = 'col-md-6 hidden-print';
+			$t_holidays_data[ 'title' ] = '<h2>Current/upcoming holidays</h2>' . PHP_EOL;
+			$t_holidays_data[ 'head' ] = array(
+				0 => array( 'column' => 'Name'),
+				1 => array( 'column' => 'Dates'),
+			);
 			foreach( $t_holidays as $t_holiday ) {
 				$t_holidays_data[ 'row' ][] = array( 'column' => array(
 					0 => array( 'class' => '', 'value' => $t_holiday[ 'name' ]),
 					1 => array( 'class' => 'class="' . $t_holiday[ 'class' ] . '"', 'value' => $t_holiday[ 'dates' ])),
 				);
 			}
+		} else {
+			$t_display_holidays = false;
 		}
 
 		// Last update

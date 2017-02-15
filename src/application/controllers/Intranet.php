@@ -94,7 +94,7 @@ class Intranet extends CI_Controller {
 		);
 		$t_telephones = $this->Intranet_model->get_staff( $post[ 'order' ], $b_show_externals );
 		foreach( $t_telephones as $t_telephone ) {
-			$t_table_data[ 'row' ][] = array( 'column' => array(
+			$t_table_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => $t_telephone[ 'extn' ]),
 				1 => array( 'class' => 'class="' . $t_telephone[ 'class' ] . '"', 'value' => $t_telephone[ 'name' ]),
 				2 => array( 'class' => ( $b_show_externals ) ? '' : 'class="hidden"', 'value' => $t_telephone[ 'externals' ])),
