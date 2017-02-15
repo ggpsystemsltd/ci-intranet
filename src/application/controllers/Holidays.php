@@ -279,12 +279,10 @@ class Holidays extends CI_Controller
 				// Send an email to the requester
 				$this->send_approved_email( $t_holiday );
 			} elseif ($t_action == "deny") {
-				// Deny
+				// Deny - Possible known post values: note
+				$p_note = $this->input->post( 'note', TRUE );
 
-				// Possible known post values: note
-				$post = $this->input->post( NULL, TRUE );
-
-				if( empty( $post )) {
+				if( empty( $p_note )) {
 					// Collect a reason - wrap in an "if", we get a POST value back from the encapsulated form
 					echo Holidays::$c_head;
 					echo '<div id="dialog" title="Deny request">' . PHP_EOL;
@@ -318,10 +316,10 @@ class Holidays extends CI_Controller
 	});
 </script>' .PHP_EOL;
 					echo Holidays::$c_tail;
-				} elseif( $post[ 'confirm' ] === 'confirmed' ) {
+				} elseif( $p_note[ 'confirm' ] === 'confirmed' ) {
 					$t_note = '';
-					if( !empty( $post[ 'note' ])) {
-						$t_note = $post[ 'note' ];
+					if( !empty( $p_note[ 'note' ])) {
+						$t_note = $p_note[ 'note' ];
 					}
 					// Delete the holiday
 					//$this->Holiday_model->delete_holiday( $t_holiday_id );

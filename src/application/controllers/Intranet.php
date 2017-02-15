@@ -42,15 +42,13 @@ class Intranet extends CI_Controller {
 			$b_show_externals = true;
 		}
 
-		$post = $this->input->post( NULL, TRUE );
-		if( isset( $post[ 'save' ] ) and $post[ 'save' ] == "Save directory" ) {
+		$p_save = $this->input->post( 'save', true );
+		if( $p_save == "Save directory" ) {
 			header( 'Content-type: text/html' );
 			header( 'Content-Disposition: attachment; filename="directory.html"');
 		}
-		if( !isset( $post[ 'order' ])) {
-			$post[ 'order' ] = 1;
-		}
-		switch( $this->input->post( 'order' )) {
+		$p_order = $this->input->post( 'order', true );
+		switch( $p_order ) {
 			case 4:
 				$order = "Department Order";
 				break;
@@ -92,7 +90,7 @@ class Intranet extends CI_Controller {
 			1 => array( 'class' => '', 'column' => 'Name' ),
 			2 => array( 'class' => ( $b_show_externals ) ? '' : 'class="hidden"', 'column' => 'External(s)' ),
 		);
-		$t_telephones = $this->Intranet_model->get_staff( $post[ 'order' ], $b_show_externals );
+		$t_telephones = $this->Intranet_model->get_staff( $p_order, $b_show_externals );
 		foreach( $t_telephones as $t_telephone ) {
 			$t_table_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => $t_telephone[ 'extn' ]),
@@ -114,7 +112,7 @@ class Intranet extends CI_Controller {
 				<div class="form-group">
 					<label class="col-sm-2 control-label">Select order</label>
 					<div class="col-sm-4">' . PHP_EOL;
-		$t_form_data[ 'variable' ] .= form_dropdown( 'order', $t_order_array, $post[ 'order' ],
+		$t_form_data[ 'variable' ] .= form_dropdown( 'order', $t_order_array, $p_order,
 			array( 'class' => 'form-control', 'onchange' => 'this.form.submit();' ));
 		$t_form_data[ 'variable' ] .= '					</div>
 				</div>
