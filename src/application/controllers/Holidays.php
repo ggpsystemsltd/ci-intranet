@@ -244,12 +244,16 @@ class Holidays extends CI_Controller
 				'holiday_type' => $t_request[ 'holiday_type' ],
 				'note' => $t_request[ 'note' ]);
 			if( !$this->Nonce_model->verify_crc32( $t_request_id, $t_cnonce, serialize( $t_holiday_data ))) {
-				echo 'The holiday request could not be verified. Please start again. You can close this tab/window if you don\'t need it.';
+				echo Holidays::$c_head;
+				echo '<h1>Request unverified</h1><p>The holiday request could not be verified. Please start again. Close this tab/window if you don\'t need it.</p>';
+				echo Holidays::$c_tail;
 				die();
 			}
 		} else {
 			$this->Holiday_model->delete_holiday( $t_request_id );
-			echo 'Holiday request deleted. You can close this tab/window if you don\'t need it.';
+			echo Holidays::$c_head;
+			echo '<h1>Request deleted</h1><p>The holiday request has been deleted. Close this tab/window if you don\'t need it.</p>';
+			echo Holidays::$c_tail;
 			die();
 		}
 
@@ -283,7 +287,7 @@ class Holidays extends CI_Controller
 				// Send an email to the requester
 				$this->send_approved_email( $t_holiday );
 				echo Holidays::$c_head;
-				echo '<h1>Request approved</h1><p>Close this tab/window if you don\'t need it.</p>';
+				echo '<h1>Request approved</h1><p>The holiday has been approved. Close this tab/window if you don\'t need it.</p>';
 				echo Holidays::$c_tail;
 				die();
 			} elseif ($t_action == "deny") {
@@ -334,7 +338,7 @@ class Holidays extends CI_Controller
 					// Send an email to the requester
 					$this->send_denied_email( $t_holiday, $t_note );
 					echo Holidays::$c_head;
-					echo '<h1>Request denied</h1><p>Close this tab/window if you don\'t need it.</p>';
+					echo '<h1>Request denied</h1><p>The holiday has been denied. Close this tab/window if you don\'t need it.</p>';
 					echo Holidays::$c_tail;
 					die();
 				}
