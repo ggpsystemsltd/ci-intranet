@@ -39,7 +39,7 @@ class Machines extends CI_Controller {
 	<script src="' . base_url( '/assets/js/machines.js' ) . '" type="text/javascript"></script>',
 		);
 
-		$t_body_data['data'] = '			<form action="/machines/book" method="post" id="machine-form" class="form-horizontal" accept-charset="utf-8">';
+		$t_body_data['data'] = '			<form action="' . base_url( '/machines/book' ) . '" method="post" id="machine-form" class="form-horizontal" accept-charset="utf-8">';
 
 		// Machine table
 		$t_table_data[ 'title' ] = '';
@@ -133,8 +133,7 @@ class Machines extends CI_Controller {
 			'machine_id' => json_encode( $this->input->post( 'machines', true )),
 		);
 		$this->Booking_model->insert_booking( $t_booking_data );
-		$t_uri = '/'. explode( '/', uri_string() )[0];
-		redirect( $t_uri );
+		redirect( base_url( '/'. explode( '/', uri_string() )[0] ));
 	}
 
 	/**
@@ -149,8 +148,7 @@ class Machines extends CI_Controller {
 		if( !is_null( $p_machine_id ) ) {
 			$this->Booking_model->update_booking( $p_machine_id );
 		}
-		$t_uri = '/'. explode( '/', uri_string() )[0];
-		redirect( $t_uri );
+		redirect( base_url( '/'. explode( '/', uri_string() )[0] ));
 	}
 
 	public function bookings() {

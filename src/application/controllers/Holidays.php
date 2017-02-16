@@ -89,7 +89,7 @@ class Holidays extends CI_Controller
 		$t_users = $this->Staff_model->get_staff_list();
 		$t_form_data[ 'variable' ] = '		<div id="legend" class="btn btn-default clearfix">Request a holiday</div>
 		<div class="form-content row" style="display: none;">
-			<form action="/holidays/request" method="post" id="holiday-form" class="form-horizontal" accept-charset="utf-8">
+			<form action="' . base_url( '/holidays/request' ) . '" method="post" id="holiday-form" class="form-horizontal" accept-charset="utf-8">
 				<div class="form-group">
 					<label class="col-sm-2 control-label">Select user</label>
 					<div class="col-sm-4">' .PHP_EOL;
@@ -259,6 +259,10 @@ class Holidays extends CI_Controller
 
 		// Send approval email.
 		$this->send_approval_email( $t_request );
+		echo Holidays::$c_head;
+		echo '<h1>Request confirmed</h1><p>An email has been sent to <strong>Prim Maxwell</strong> with your holiday request. Close this tab/window if you don\'t need it.</p>';
+		echo Holidays::$c_tail;
+		die();
 	}
 
 	public function approve_holiday_request()
@@ -278,6 +282,10 @@ class Holidays extends CI_Controller
 				$this->Holiday_model->update_holiday( $t_holiday_id, array( 'approved' => 1 ));
 				// Send an email to the requester
 				$this->send_approved_email( $t_holiday );
+				echo Holidays::$c_head;
+				echo '<h1>Request approved</h1><p>Close this tab/window if you don\'t need it.</p>';
+				echo Holidays::$c_tail;
+				die();
 			} elseif ($t_action == "deny") {
 				// Deny - Possible known post values: note
 				$p_note = $this->input->post( 'note', TRUE );
@@ -286,7 +294,7 @@ class Holidays extends CI_Controller
 					// Collect a reason - wrap in an "if", we get a POST value back from the encapsulated form
 					echo Holidays::$c_head;
 					echo '<div id="dialog" title="Deny request">' . PHP_EOL;
-					echo '<form  action="/' . $this->uri->uri_string() . '" method="POST" id="deny-form">' . PHP_EOL;
+					echo '<form  action="' . base_url('/' . $this->uri->uri_string() ) . '" method="POST" id="deny-form">' . PHP_EOL;
 					echo '<input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I am denying the requested holiday.</input><br/><br/>' . PHP_EOL;
 					echo '<label for="deny-note">Note &nbsp;</label><input type="text" name="note" id="deny-note"/>' . PHP_EOL;
 					echo '</form>' . PHP_EOL;
@@ -325,15 +333,19 @@ class Holidays extends CI_Controller
 					//$this->Holiday_model->delete_holiday( $t_holiday_id );
 					// Send an email to the requester
 					$this->send_denied_email( $t_holiday, $t_note );
+					echo Holidays::$c_head;
+					echo '<h1>Request denied</h1><p>Close this tab/window if you don\'t need it.</p>';
+					echo Holidays::$c_tail;
+					die();
 				}
 			} else {
 				// Log naughtiness
-				echo "Unrecognised action! No participation medal for you!";
+				echo "Unrecognised action!";
 				die();
 			}
 		} else {
 			// Log naughtiness
-			echo "Nonce did not verify! No participation medal for you!";
+			echo "Nonce did not verify!";
 			die();
 		}
 	}
@@ -491,6 +503,7 @@ class Holidays extends CI_Controller
 		$t_mail->Port = $this->config->item( 'smtp_port' );
 		$t_mail->SMTPAuth = false;
 		$t_mail->SMTPAutoTLS = false;
+		$t_mail->Priority = 1; // Highest priority
 		$t_mail->isHTML(true);
 		$t_mail->setFrom( 'donotreply@ggpsystems.co.uk', 'Holiday Booking Page' );
 		$t_mail->addReplyTo( 'donotreply@ggpsystems.co.uk', 'Holiday Booking Page' );
