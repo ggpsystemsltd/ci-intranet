@@ -165,6 +165,41 @@ class Machine_model extends CI_Model
 
 		return $t_software_list;
 	}
+
+	/*
+	 * get_wol_list - retrieve the list of machines that can be Woken-on-LAN
+	 *
+	 * @return array The list of WoLable machines
+	 */
+	function get_wol_list()
+	{
+		$t_return = array();
+
+		$this->db->select( 'machine.name AS m_name, staff.name AS s_name, machine.mac_address' );
+		$this->db->join( 'staff', 'staff.staff_id = machine.staff_id' );
+		$this->db->where( 'machine.mac_address !=', '' );
+		$t_query = $this->db->get( 'machine' );
+		if ( $t_query->num_rows() > 0 ) {
+			foreach ($t_query->result_array() as $t_row) {
+				$t_return[] = $t_row;
+			}
+		}
+
+		return ( !empty( $t_return )) ? $t_return : false;
+	}
+
+	/*
+	 * get_last_update - get the date of the last change to the database
+	 *
+	 * @return	string	Last update date
+	 */
+	function get_last_update()
+	{
+		$this->db->select_max( 'updated' );
+		$this->db->where( 'deleted', false );
+
+		return $this->db->get( 'machine' )->row()->updated;
+	}
 }
 
 /* End of file Machine_model.php */
