@@ -30,8 +30,7 @@ class Booking_model extends CI_Model
 			if( $t_now == $t_start[ 0 ] ) {
 				$t_row[ 'start' ] = $t_start[ 1 ];
 			}
-			//$t_return = '<div id="delete-dialog" title="Confirm Deletion"><input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I confirm that I wish to delete the specified booking.</input></div>';
-			$t_return = "<span style=\"cursor: url(http://cur.cursors-4u.net/others/oth-3/oth226.cur), crosshair;\" onclick=\"if(confirm('Do you want to delete this booking?')) {window.location='" . base_url( '/machines/debook/' . $p_machine_id . '/' ) . "'};\">" . $t_row[ 'note' ] . "<br/><em>" . strtolower( $t_row[ 'firstname' ] ) . strtolower( substr( $t_row[ 'surname' ], 0, 1 ) ) . " - " . ($t_row[ 'start' ] == "0000-00-00 00:00:00" ? "" : $t_row[ 'start' ] . " for ") . $t_row[ 'duration' ] . "</em></span>";
+			$t_return = '<span style="cursor: url(http://cur.cursors-4u.net/others/oth-3/oth226.cur), crosshair;" onclick="BootstrapDialog.confirm({closable: true, message: \'Do you want to delete this booking?\', type: BootstrapDialog.TYPE_WARNING, btnOKLabel: \'Delete booking\', btnOKClass: \'btn-warning\', callback: function(result) {if(result) {window.location=\'' . base_url( '/machines/debook/' . $p_machine_id . '/' ) . '\'}}});">' . $t_row[ 'note' ] . "<br/><em>" . strtolower( $t_row[ 'firstname' ] ) . strtolower( substr( $t_row[ 'surname' ], 0, 1 ) ) . " - " . ($t_row[ 'start' ] == "0000-00-00 00:00:00" ? "" : $t_row[ 'start' ] . " for ") . $t_row[ 'duration' ] . "</em></span>";
 		} else {
 			$t_return = NULL;
 		}

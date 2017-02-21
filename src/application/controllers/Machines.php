@@ -34,8 +34,10 @@ class Machines extends CI_Controller {
 			'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
 			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane',
 				array( 'class' => 'link-mailto' )),
-			'style' => '<link rel="stylesheet" media="screen" href="' . base_url( '/assets/style/jquery-ui-timepicker-addon.css' ) . '" type="text/css" />',
-			'javascript' => '<script src="' . base_url( '/assets/js/jquery-ui-timepicker-addon.js' ) . '" type="text/javascript"></script>
+			'style' => '<link rel="stylesheet" media="screen" href="' . base_url( '/assets/style/jquery-ui-timepicker-addon.css' ) . '" type="text/css" />
+	<link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css" type="text/css" />',
+			'javascript' => '<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js" type="text/javascript"></script>
+	<script src="' . base_url( '/assets/js/jquery-ui-timepicker-addon.js' ) . '" type="text/javascript"></script>
 	<script src="' . base_url( '/assets/js/machines.js' ) . '" type="text/javascript"></script>',
 		);
 
