@@ -53,7 +53,6 @@ class Attendance extends CI_Controller {
 			'sick' => 'info',
 		);
 
-        // @todo Make Attendance look in Holidays and pre-set Vacation status
 		$t_current_holidays = $this->Holiday_model->get_holidays();
 		if( $t_current_holidays ) {
 			foreach( $t_current_holidays as $value) {
