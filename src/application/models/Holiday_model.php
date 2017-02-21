@@ -36,6 +36,30 @@ class Holiday_model  extends CI_Model
 		return $return;
 	}
 
+	/**
+	 * get_holidays - get the staff_ids of all staff currently on holiday
+	 *
+	 * @return array|bool Staff_ID values of staff on holiday, false if none
+	 */
+	public function get_holidays()
+	{
+		$return = array();
+		$this->db->select( 'staff_id' );
+		$this->db->where( 'confirmed', true );
+		$this->db->where( 'approved', true );
+		$this->db->where( 'start <= CURDATE()' );
+		$this->db->where( 'end >= CURDATE()' );
+		$query = $this->db->get( 'holidays' );
+		if( $query->num_rows() > 0 ) {
+			foreach( $query->result_array() as $row ) {
+				$return[] = (int)$row[ 'staff_id' ];
+			}
+		} else {
+			return false;
+		}
+		return $return;
+	}
+
 	function get_last_update()
 	{
 		$this->db->select_max( 'updated' );

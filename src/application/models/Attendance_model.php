@@ -43,6 +43,21 @@ class Attendance_model extends CI_Model
 		}
 		return $t_return;
 	}
+
+	/**
+	 * update - update a given staff record field with a given value
+	 *
+	 * @param $p_staff_id staff_id to update
+	 * @param $p_field field to update
+	 * @param $p_value value to update field to
+	 */
+	public function update( $p_staff_id, $p_field, $p_value )
+	{
+		$t_data = array( $p_field => $p_value );
+
+		$this->db->where( 'staff_id', $p_staff_id );
+		$this->db->update( 'staff', $t_data );
+	}
 }
 
 /* End of file Attendance_model.php */
