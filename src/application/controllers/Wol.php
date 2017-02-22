@@ -10,6 +10,30 @@
  */
 class Wol extends CI_Controller
 {
+	static $c_header = '<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<title>Wake-on-LAN (GGP intranet)</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css"/>
+	<link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+	<style type="text/css">body {width: 640px; font-family: Roboto, sans-serif; font-size: 14px;}</style>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" type="application/javascript"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js" type="text/javascript"></script>
+</head>
+<body>
+	<div class="container">';
+
+	static $c_footer = '	</div> <!-- Container -->
+</body>
+</html>';
+
 	function __construct()
 	{
 		parent::__construct();
@@ -77,14 +101,17 @@ class Wol extends CI_Controller
 	# Modified by Allan Barizo http://www.hackernotcracker.com
 	public function wake()
 	{
+		$this->load->helper( array(  'url' ));
+
 		$t_broadcast_address = "10.0.0.255";
 		$t_socket_number = "7";
+		$t_uri = '/'. explode( '/', uri_string() )[0];
 
 		$p_values = unserialize($this->input->post( 'wake', true ));
 		$t_name = $p_values[ 0 ];
 		$t_mac = strtoupper( $p_values[ 1 ]);
 
-		echo 'Attempting to wake ' . $t_name . ' [' . $t_mac . ']'; // @todo do this with a dialog
+		echo $this::$c_header . PHP_EOL;
 
 		$t_address_byte = explode(':', $t_mac);
 		$t_hardware_address = '';
@@ -94,26 +121,23 @@ class Wol extends CI_Controller
 		// send it to the broadcast address using UDP
 		// SQL_BROADCAST option isn't help!!
 		$t_socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		$t_return = false;
 		if ($t_socket == false) {
-			echo 'Error creating socket!\n';
-			echo "Error code is '" . socket_last_error($t_socket) . "' - " . socket_strerror(socket_last_error($t_socket)); // @todo do this with a dialog
-			return FALSE;
+			echo '	<script type="text/javascript">BootstrapDialog.alert({type: BootstrapDialog.TYPE_WARNING, message: \'Error creating socket!<br>Error code is ' . socket_last_error($t_socket) . ' - ' . socket_strerror(socket_last_error($t_socket)) . '\', callback: function(result){if(result) {window.location.replace(\'' . base_url('/' . $t_uri) . '\');}}});</script>' . PHP_EOL;
 		} else {
 			// setting a broadcast option to socket:
 			$t_option_return = socket_set_option($t_socket, SOL_SOCKET, SO_BROADCAST, TRUE);
 			if ($t_option_return < 0) {
-				// echo 'setsockopt() failed, error: ' . strerror($option_return) . "\n"; // @todo do this with a dialog
-				return FALSE;
+				echo '	<script type="text/javascript">BootstrapDialog.alert({type: BootstrapDialog.TYPE_WARNING, message: \'setsockopt() failed, error:  ' . socket_strerror($t_option_return) . ' ' . socket_strerror(socket_last_error($t_socket)) . '\', callback: function(result){if(result) {window.location.replace(\'' . base_url('/' . $t_uri) . '\');}}});</script>' . PHP_EOL;
 			}
 			if (socket_sendto($t_socket, $t_msg, strlen($t_msg), 0, $t_broadcast_address, $t_socket_number)) {
-				// echo 'Magic Packet sent successfully!'; // @todo do this with a dialog
+				echo '<script type="text/javascript">BootstrapDialog.alert({message: \'Magic packet sent to wake  ' . $t_name . ' [' . $t_mac . ']\', callback: function(result){if(result){window.location.replace(\'' . base_url('/' . $t_uri) . '\');}}});</script>' . PHP_EOL;
 				socket_close($t_socket);
-				return TRUE;
 			} else {
-				// echo 'Magic packet failed!'; // @todo do this with a dialog
-				return FALSE;
+				echo '<script type="text/javascript">BootstrapDialog.alert({type: BootstrapDialog.TYPE_WARNING, message: \'Magic packet failed\', callback: function(result){if(result){window.location.replace(\'' . base_url('/' . $t_uri) . '\');}}});</script>' . PHP_EOL;
 			}
 		}
+		echo $this::$c_footer;
 	}
 }
 
