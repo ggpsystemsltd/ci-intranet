@@ -423,7 +423,7 @@ class Holidays extends CI_Controller
 			}
 
 			// Create the email configuration
-			$t_email_config[ 'to' ] = 'prim.maxwell@ggpsystems.co.uk';
+			$t_email_config[ 'to' ] = 'holidays@ggpsystems.co.uk';
 			$t_email_config[ 'subject' ] = 'Holiday request';
 			$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong> has requested a <strong>' . $p_holiday_request[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong>.</p>';
 			if( !empty( $p_holiday_request[ 'note' ] )) {
@@ -457,7 +457,7 @@ class Holidays extends CI_Controller
 		// Create the email configuration
 		$t_user = $this->Staff_model->get_name_by_id( $p_holiday[ 'staff_id' ]);
 		$t_email_config[ 'to' ] = $this->Staff_model->get_email_by_id( $p_holiday[ 'staff_id' ]);
-		$t_email_config[ 'cc' ]  = array( 'kiran.dower@ggpsystems.co.uk', 'shanice.bryan@ggpsystems.co.uk' );
+		$t_email_config[ 'cc' ]  = array( 'holidays@ggpsystems.co.uk' );
 		$t_email_config[ 'subject' ] = 'Holiday request approved';
 		$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong>\'s requested <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong> has been approved.</p></div>' . PHP_EOL . Holidays::$c_tail;
 
@@ -479,11 +479,13 @@ class Holidays extends CI_Controller
 		}
 
 		// Create the email configuration
+		$t_user = $this->Staff_model->get_name_by_id( $p_holiday[ 'staff_id' ]);
 		$t_email_config[ 'to' ] = $this->Staff_model->get_email_by_id( $p_holiday[ 'staff_id' ]);
+		$t_email_config[ 'cc' ]  = array( 'holidays@ggpsystems.co.uk' );
 		$t_email_config[ 'subject' ] = 'Holiday request denied';
-		$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<p>Your requested <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong> has been denied.</p>';
+		$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong>\'s requested <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong> has been denied.</p>';
 		if( !empty( $p_note )) {
-			$t_email_config[ 'message' ] .= '<p>The following note was included: <em>"' . $p_note . '"</em>.</p>';
+			$t_email_config[ 'message' ] .= '<p>The following note was included: <em>"' . $p_note . '"</em>.</p></div>';
 		};
 		$t_email_config[ 'message' ] .= PHP_EOL . Holidays::$c_tail;
 
