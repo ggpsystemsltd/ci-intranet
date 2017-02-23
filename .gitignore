@@ -83,3 +83,4 @@ Temporary Items
 
 */logs/*.log
 /docker/mysql/*.sql
+scratch.*
