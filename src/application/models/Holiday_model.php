@@ -18,7 +18,7 @@ class Holiday_model  extends CI_Model
 	function get_holidays_this_week()
 	{
 		$return = array();
-		$query = $this->db->query( 'SELECT staff.name, holidays.start, holidays.end, holidays.approved FROM `holidays` 
+		$query = $this->db->query( 'SELECT holidays.holiday_id, staff.name, holidays.start, holidays.end, holidays.approved FROM `holidays` 
 	JOIN `staff` ON holidays.staff_id=staff.staff_id 
 	WHERE `confirmed`=1 
 	AND (`start` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 week) 
@@ -29,6 +29,7 @@ class Holiday_model  extends CI_Model
 			foreach( $query->result_array() as $row ) {
 				$return[] = array(
 					'class' => ( $row[ 'approved' ]==1) ? 'success' : 'danger' ,
+					'id' => $row[ 'holiday_id' ],
 					'name' => $row[ 'name' ],
 					'dates' => $row[ 'start' ] . " to " . $row[ 'end' ],
 				);
@@ -38,11 +39,46 @@ class Holiday_model  extends CI_Model
 	}
 
 	/**
-	 * get_holidays - get the staff_ids of all staff currently on holiday
+	 * get_holidays - get the holidays for the current month
+	 *
+	 * @param $p_interval string The interval of the search
+	 * @return array|bool Holiday record(s), false if none
+	 */
+	public function get_holidays( $p_interval = "1 week" )
+	{
+		$return = array();
+		$this->db->select( 'holidays.holiday_id, staff.name, holidays.start, holidays.end, holidays.confirmed, holidays.approved' );
+		$this->db->join( 'staff', 'holidays.staff_id=staff.staff_id');
+		$this->db->where( '`start` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ' . $p_interval . ')' );
+		$this->db->or_where( '`end` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ' . $p_interval . ')' );
+		$this->db->or_where( 'CURDATE() BETWEEN `start` AND `end`' );
+		$query = $this->db->get( 'holidays' );
+		if( $query->num_rows() > 0 ) {
+			foreach( $query->result_array() as $row ) {
+				$t_class = 'success';
+				if( $row[ 'confirmed' ] == 0 ) {
+					$t_class = 'danger';
+				} elseif( $row[ 'approved' ] == 0 ) {
+					$t_class = 'warning';
+				}
+				$return[] = array(
+					'class' => $t_class,
+					'id' => $row[ 'holiday_id' ],
+					'name' => $row[ 'name' ],
+					'dates' => $row[ 'start' ] . " to " . $row[ 'end' ],
+				);
+			}
+		} else {
+			return false;
+		}
+		return $return;
+	}
+	/**
+	 * get_staff_holidays - get the staff_ids of all staff currently on holiday
 	 *
 	 * @return array|bool Staff_ID values of staff on holiday, false if none
 	 */
-	public function get_holidays()
+	public function get_staff_holidays()
 	{
 		$return = array();
 		$this->db->select( 'staff_id' );

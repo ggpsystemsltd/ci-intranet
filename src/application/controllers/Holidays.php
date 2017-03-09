@@ -61,23 +61,34 @@ class Holidays extends CI_Controller
 		);
 
 		// Vacations table - array will be empty if no holidays
-		$t_holidays = $this->Holiday_model->get_holidays_this_week();
+		$t_holidays = $this->Holiday_model->get_holidays("3 month");
 		$t_holidays_data[ 'title' ] = '';
-		$t_holidays_data[ 'class' ] = 'col-md-6';
+		$t_holidays_data[ 'class' ] = 'col-md-4';
 		$t_holidays_data[ 'head' ] = array(
 			0 => array( 'column' => 'Name'),
 			1 => array( 'column' => 'Dates'),
+			2 => array( 'column' => '' ),
 		);
 		if( empty( $t_holidays )) {
 			$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => ''),
-				1 => array( 'class' => '', 'value' => '')),
+				1 => array( 'class' => '', 'value' => ''),
+				2 => array( 'class' => '', 'value' => '')),
 			);
 		} else {
 			foreach( $t_holidays as $t_holiday ) {
 				$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 					0 => array( 'class' => '', 'value' => $t_holiday[ 'name' ]),
-					1 => array( 'class' => 'class="' . $t_holiday[ 'class' ] . '"', 'value' => $t_holiday[ 'dates' ])),
+					1 => array( 'class' => 'class="' . $t_holiday[ 'class' ] . '"', 'value' => $t_holiday[ 'dates' ]),
+					2 => array( 'class' => '', 'value' => '<button type="button" id="cancel-btn-' . $t_holiday[ 'id' ] .
+						'" name="save" class="btn btn-warning" onclick="BootstrapDialog.show({title: \'Delete request\',' .
+						' message: \'I confirm that I am the user that requested this holiday and that I wish to ' .
+						'delete the request.\', type: BootstrapDialog.TYPE_WARNING, buttons: [{label: \'Cancel\', ' .
+						'action: function(dialog) {dialog.close();}},{icon: \'glyphicon glyphicon-trash\', label: ' .
+						'\'Delete request\', cssClass: \'btn-warning\', action: function(dialog) {' .
+						'window.location.replace(\'' . base_url('/' . $this->uri->uri_string() ) . '/action/delete/' .
+						$t_holiday[ 'id' ] . '\'); dialog.close();}}]});"><span class="glyphicon glyphicon-trash">' .
+						'</span></button>' )),
 				);
 			}
 		}
@@ -156,6 +167,37 @@ class Holidays extends CI_Controller
 		$this->parser->parse( 'row-stop', array() );
 		$this->parser->parse( 'form', $t_form_data );
 		$this->parser->parse( 'footer', $data );
+	}
+
+	public function action()
+	{
+		$this->load->model( array( 'Holiday_model' ));
+
+		$t_action = $this->uri->segment( 3, 0 );
+		$t_request_id = (int)$this->uri->segment( 4, 0 );
+		$t_holiday = $this->Holiday_model->get_holiday( $t_request_id );
+
+
+		switch( $t_action ) {
+			case 'delete':
+				$this->Holiday_model->delete_holiday( $t_request_id );
+				if( $t_holiday[ 'confirmed' ] == 1 ) {
+					$this->send_cancelled_email( $t_holiday );
+				}
+				echo Holidays::$c_head . PHP_EOL;
+				echo '<script type="application/javascript">$(document).ready(function() {
+    BootstrapDialog.alert({
+        title: \'Request cancelled\',
+        message: \'The holiday request has been cancelled.\',
+        callback: function(result) {
+            window.location.replace(\'' . base_url('/' . $this->uri->segment( 1, 0 )) . '\');
+        }
+    });
+});</script>' . PHP_EOL;
+				echo Holidays::$c_tail;
+				break;
+			default:
+		}
 	}
 
 	public function request()
@@ -355,7 +397,7 @@ class Holidays extends CI_Controller
 				echo '<script type="application/javascript">$(document).ready(function() {
     BootstrapDialog.alert({
         title: \'Confirm denial\',
-        message: \'<form  action="' . base_url('/' . $this->uri->uri_string() ) .'" method="POST" id="deny-form"><input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I am denying the requested holiday.</input><br/><br/><label for="deny-note">Note &nbsp;</label><input type="text" name="note" id="deny-note"/></form>\',
+        message: \'<form  action="' . base_url('/' . $this->uri->uri_string() ) . '" method="POST" id="deny-form"><input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I am denying the requested holiday.</input><br/><br/><label for="deny-note">Note &nbsp;</label><input type="text" name="note" id="deny-note"/></form>\',
         callback: function(result) {
 			$("form#deny-form").submit(); //submit the encapsulated form
         }
@@ -504,6 +546,34 @@ class Holidays extends CI_Controller
 		$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user .
 			'</strong>\'s requested <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' .
 			$t_date . '</strong> has been approved.</p>
+			<p><em style="font-size: small;">This is an automated email. Please do not reply.</em></p></div>' .
+			PHP_EOL . Holidays::$c_tail;
+
+		// Send the email
+		$this->send_email( $t_email_config );
+	}
+
+	private function send_cancelled_email( $p_holiday )
+	{
+		$this->load->model( array( 'Staff_model' ));
+
+		switch( $p_holiday[ 'holiday_type' ] ) {
+			case "Multiple Days":
+				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0] . " to " . explode( ' ', $p_holiday[ 'end' ] )[0];
+				break;
+			default:
+				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0];
+				break;
+		}
+
+		// Create the email configuration
+		$t_user = $this->Staff_model->get_name_by_id( $p_holiday[ 'staff_id' ]);
+		$t_email_config[ 'to' ] = $this->Staff_model->get_email_by_id( $p_holiday[ 'staff_id' ]);
+		$t_email_config[ 'cc' ]  = array( 'holidays@ggpsystems.co.uk' );
+		$t_email_config[ 'subject' ] = 'Holiday request cancelled';
+		$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user .
+			'</strong>\'s requested <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' .
+			$t_date . '</strong> has been cancelled.</p>
 			<p><em style="font-size: small;">This is an automated email. Please do not reply.</em></p></div>' .
 			PHP_EOL . Holidays::$c_tail;
 

@@ -53,7 +53,7 @@ class Attendance extends CI_Controller {
 			'sick' => 'info',
 		);
 
-		$t_current_holidays = $this->Holiday_model->get_holidays();
+		$t_current_holidays = $this->Holiday_model->get_staff_holidays();
 		if( $t_current_holidays ) {
 			foreach( $t_current_holidays as $value) {
 				$this->Attendance_model->update( $value, 'work_state', 'vacation' );
