@@ -24,7 +24,7 @@ class Holiday_model  extends CI_Model
 	AND (`start` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 week) 
 	OR `end` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 week) 
 	OR CURDATE() BETWEEN `start` AND `end`)
-	ORDER BY holiays.start, staff.firstname' );
+	ORDER BY holidays.start, staff.firstname' );
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {
 				$return[] = array(
