@@ -47,7 +47,6 @@ class Wol extends CI_Controller
 		$this->load->model( array( 'Machine_model' ));
 
 		$data = array(
-			'intranet_title' => 'Wake-on-LAN (GGP intranet)',
 			'intranet_heading' => 'Wake-on-LAN',
 			'intranet_secondary' => date( 'd-m-Y' ),
 			'intranet_user' => $_SERVER['INTRANET_USER'],
@@ -57,8 +56,7 @@ class Wol extends CI_Controller
 			'meta_description' => 'Wake-on-LAN page.',
 			'keywords' => 'wake-on-lan, wol, magic packet',
 			'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
-			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane',
-				array( 'class' => 'link-mailto' )),
+			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane' ),
 			'style' => '',
 			'javascript' => '',
 		);

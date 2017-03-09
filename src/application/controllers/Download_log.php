@@ -26,7 +26,6 @@ class Download_log extends CI_Controller
 		}
 
 		$data = array(
-			'intranet_title' => 'Download Monitor Log (GGP intranet)',
 			'intranet_heading' => 'Download Monitor Log',
 			'intranet_secondary' => date( 'd-m-Y' ),
 			'intranet_user' => filter_input( INPUT_SERVER, 'INTRANET_USER' ),
@@ -36,8 +35,7 @@ class Download_log extends CI_Controller
 			'meta_description' => 'Download monitor log.',
 			'keywords' => 'download monitor log',
 			'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
-			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane',
-				array( 'class' => 'link-mailto' )),
+			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane' ),
 			'style' => '',
 			'javascript' => '<script type="text/javascript">$(\'#legend\').click(function(){
         $(\'.form-content\').toggle();

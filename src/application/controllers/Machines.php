@@ -22,7 +22,6 @@ class Machines extends CI_Controller {
 		$this->load->model( array( 'Booking_model', 'Machine_model', 'Staff_model' ));
 
 		$data = array(
-			'intranet_title' => 'Machine Directory (GGP intranet)',
 			'intranet_heading' => 'Internal Machine Directory',
 			'intranet_secondary' => date( 'd-m-Y' ),
 			'intranet_user' => filter_input( INPUT_SERVER, 'INTRANET_USER' ),
@@ -32,8 +31,7 @@ class Machines extends CI_Controller {
 			'keywords' => 'computer directory, machine directory',
 			'refresh' => '<meta http-equiv="refresh" content="120" />',
 			'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
-			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane',
-				array( 'class' => 'link-mailto' )),
+			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane' ),
 			'style' => '<link rel="stylesheet" media="screen" href="' . base_url( '/assets/style/jquery-ui-timepicker-addon.css' ) . '" type="text/css" />
 	<link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css" type="text/css" />',
 			'javascript' => '<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js" type="text/javascript"></script>
@@ -106,7 +104,6 @@ class Machines extends CI_Controller {
 					</div>
 				</div>
 			</form>
-			<div id="submit-dialog" title="Confirm Request"><input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I confirm that I wish to request the specified resource.</input></div>
 		</div>' . PHP_EOL;
 		$t_form_data[ 'variable_post' ] = '';
 

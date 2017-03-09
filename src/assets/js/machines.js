@@ -30,37 +30,16 @@ $(document).ready(function() {
         timeInput: true
     });
 
-    // submit confirmation dialog
-    // bind to submit button
-    $('#submit-dialog').dialog({
-        autoOpen: false,
-        buttons: [
-            {
-                text: 'Ok',
-                icons: {
-                    primary: 'ui-icon-check'
-                },
-                click: function(){
-                    if($('#confirm-request').is(':checked')){
-                        $(this).dialog('close');
-                        $('form#machine-form').submit(); // submit the underlying form
-                    } else {
-                        $('#submit-dialog').effect('shake');
-                    }
+    $('#submit-btn').click(function(){
+        BootstrapDialog.confirm({
+            title: 'Confirm request',
+            message: 'Confirm that you wish to book the specified resource(s)?',
+            btnOKLabel: 'Book resource(s)',
+            callback: function(result){
+                if(result) {
+                    $('form#machine-form').submit(); // submit the underlying form
                 }
             }
-        ],
-        modal: true
+        });
     });
-
-    $('#submit-btn').click(function() {
-        $('#submit-dialog').dialog('open');
-    });
-    
-    // Form validation; need machines[], start_date, note and duration to have values,
-    // user will necessarily have a value.
 });
-
-function ValidationEvent() {
-    
-}

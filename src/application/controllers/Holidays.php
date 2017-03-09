@@ -6,7 +6,7 @@
  * @author Murray Crane <murray.crane@ggpsystems.co.uk>
  * @copyright 2017 (c) GGP Systems Limited
  * @license http://www.gnu.org/licenses/gpl.html
- * @version 2.0
+ * @version 2.1
  */
 class Holidays extends CI_Controller
 {
@@ -14,20 +14,21 @@ class Holidays extends CI_Controller
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>PHPMailer Email</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css"/>
+	<title>Staff Holidays</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" type="text/css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous" type="text/css" />
+	<link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css" type="text/css" />
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" type="text/css" />
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 	<style type="text/css">body {width: 640px; font-family: Roboto, sans-serif; font-size: 14px;}</style>
+    <script src="//code.jquery.com/jquery-1.12.4.js" type="application/javascript"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js" type="application/javascript"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous" type="application/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js" type="application/javascript"></script>
 </head>
 <body>
 	<div class="container">';
 	static $c_tail = '	</div> <!-- Container -->
-    <!-- JavaScript at the end so the page loads faster -->
-    <script src="//code.jquery.com/jquery-1.12.4.js" type="application/javascript"></script>
-    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js" type="application/javascript"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </body>
 </html>';
 
@@ -44,7 +45,6 @@ class Holidays extends CI_Controller
 		$this->load->model( array( 'Holiday_model', 'Nonce_model', 'Staff_model' ));
 
 		$data = array(
-			'intranet_title' => 'Staff Holidays (GGP intranet)',
 			'intranet_heading' => 'Staff Holidays',
 			'intranet_secondary' => date( 'd-m-Y' ),
 			'intranet_user' => filter_input( INPUT_SERVER, 'INTRANET_USER' ),
@@ -54,10 +54,10 @@ class Holidays extends CI_Controller
 			'meta_description' => 'Staff holiday record and holiday request form.',
 			'keywords' => 'staff holidays requests',
 			'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
-			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane',
-				array( 'class' => 'link-mailto' )),
-			'style' => '',
-			'javascript' => '<script src="' . base_url( '/assets/js/holidays.js' ) . '" type="text/javascript"></script>',
+			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane' ),
+			'style' => '	<link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css" type="text/css" />',
+			'javascript' => '<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js" type="text/javascript"></script>
+	<script src="' . base_url( '/assets/js/holidays.js' ) . '" type="text/javascript"></script>',
 		);
 
 		// Vacations table - array will be empty if no holidays
@@ -147,7 +147,6 @@ class Holidays extends CI_Controller
 					</div>
 				</div>
 			</form>
-			<div id="dialog" title="Confirm Request"><input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I confirm that I am the user selected and that I wish to request the specified holiday.</input></div>
 		</div>' . PHP_EOL;
 		$t_form_data[ 'variable_post' ] = '';
 
@@ -244,15 +243,33 @@ class Holidays extends CI_Controller
 				'holiday_type' => $t_request[ 'holiday_type' ],
 				'note' => $t_request[ 'note' ]);
 			if( !$this->Nonce_model->verify_crc32( $t_request_id, $t_cnonce, serialize( $t_holiday_data ))) {
-				echo Holidays::$c_head;
-				echo '<h1>Request unverified</h1><p>The holiday request could not be verified. Please start again. Close this tab/window if you don\'t need it.</p>';
+				echo Holidays::$c_head . PHP_EOL;
+				echo '<script type="application/javascript">$(document).ready(function() {
+    BootstrapDialog.alert({
+        title: \'Request unverified\',
+        message: \'The holiday request could not be verified.\',
+        type: BootstrapDialog.TYPE_WARNING,
+        callback: function(result) {
+            window.close();
+        }
+     });
+});</script>' . PHP_EOL;
 				echo Holidays::$c_tail;
 				die();
 			}
 		} else {
 			$this->Holiday_model->delete_holiday( $t_request_id );
-			echo Holidays::$c_head;
-			echo '<h1>Request deleted</h1><p>The holiday request has been deleted. Close this tab/window if you don\'t need it.</p>';
+			echo Holidays::$c_head . PHP_EOL;
+			echo '<script type="application/javascript">$(document).ready(function() {
+    BootstrapDialog.alert({
+        title: \'Request deleted\',
+        message: \'The holiday request has been deleted.\',
+        type: BootstrapDialog.TYPE_WARNING,
+        callback: function(result) {
+            window.close();
+        }
+    });
+});</script>' . PHP_EOL;
 			echo Holidays::$c_tail;
 			die();
 		}
@@ -263,8 +280,16 @@ class Holidays extends CI_Controller
 
 		// Send approval email.
 		$this->send_approval_email( $t_request );
-		echo Holidays::$c_head;
-		echo '<h1>Request confirmed</h1><p>An email has been sent to <strong>Prim Maxwell</strong> with your holiday request. Close this tab/window if you don\'t need it.</p>';
+		echo Holidays::$c_head . PHP_EOL;
+		echo '<script type="application/javascript">$(document).ready(function() {
+    BootstrapDialog.alert({
+        title: \'Request confirmed\',
+        message: \'An email has been sent to <strong>Prim Maxwell</strong> with your holiday request.\',
+        callback: function(result) {
+            window.close();
+        }
+    });
+});</script>' . PHP_EOL;
 		echo Holidays::$c_tail;
 		die();
 	}
@@ -278,6 +303,32 @@ class Holidays extends CI_Controller
 		$t_cnonce = explode( '-', $this->uri->segment( 4,0 ))[1];
 		$t_holiday = $this->Holiday_model->get_holiday( $t_holiday_id );
 
+		// Deny - Possible known post values: confirm, note
+		$p_note = $this->input->post( null, true );
+
+		if( !empty( $p_note ) && $p_note[ 'confirm' ] === 'confirmed' ) {
+			$t_note = '';
+			if( !empty( $p_note[ 'note' ])) {
+				$t_note = $p_note[ 'note' ];
+			}
+			// Delete the holiday
+			$this->Holiday_model->delete_holiday( $t_holiday_id );
+			// Send an email to the requester
+			$this->send_denied_email( $t_holiday, $t_note );
+			echo Holidays::$c_head . PHP_EOL;
+			echo '<script type="application/javascript">$(document).ready(function() {
+    BootstrapDialog.alert({
+        title: \'Request denied\',
+        message: \'The holiday request has been denied.\',
+        callback: function(result) {
+            window.close();
+        }
+    });
+});</script>' . PHP_EOL;
+			echo Holidays::$c_tail;
+			die();
+		}
+
 		// Verify nonce (we do nothing if it's not good...)
 		if( $this->Nonce_model->verify_crc32( $t_holiday_id, $t_cnonce, serialize( $t_holiday ))) {
 			if ($t_action == "approve") {
@@ -286,70 +337,59 @@ class Holidays extends CI_Controller
 				$this->Holiday_model->update_holiday( $t_holiday_id, array( 'approved' => 1 ));
 				// Send an email to the requester
 				$this->send_approved_email( $t_holiday );
-				echo Holidays::$c_head;
-				echo '<h1>Request approved</h1><p>The holiday has been approved. Close this tab/window if you don\'t need it.</p>';
+				echo Holidays::$c_head . PHP_EOL;
+				echo '<script type="application/javascript">$(document).ready(function() {
+    BootstrapDialog.alert({
+        title: \'Request approved\',
+        message: \'The holiday request has been approved.\',
+        callback: function(result) {
+            window.close();
+        }
+    });
+});</script>' . PHP_EOL;
 				echo Holidays::$c_tail;
 				die();
 			} elseif ($t_action == "deny") {
-				// Deny - Possible known post values: note
-				$p_note = $this->input->post( 'note', TRUE );
-
-				if( empty( $p_note )) {
-					// Collect a reason - wrap in an "if", we get a POST value back from the encapsulated form
-					echo Holidays::$c_head;
-					echo '<div id="dialog" title="Deny request">' . PHP_EOL;
-					echo '<form  action="' . base_url('/' . $this->uri->uri_string() ) . '" method="POST" id="deny-form">' . PHP_EOL;
-					echo '<input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I am denying the requested holiday.</input><br/><br/>' . PHP_EOL;
-					echo '<label for="deny-note">Note &nbsp;</label><input type="text" name="note" id="deny-note"/>' . PHP_EOL;
-					echo '</form>' . PHP_EOL;
-					echo '</div>' . PHP_EOL;
-					echo '<script>
-	$( function() {
-		// confirmation dialog
-		$( "#dialog" ).dialog({
-			buttons: [
-				{
-					text: "Deny",
-					icons: {
-						primary: "ui-icon-alert"
-					},
-					click: function() {
-						if ($("#confirm-request").is(":checked")) {
-							$(this).dialog("close");
-							$("#deny-form").submit(); //submit the encapsulated form
-						} else {
-							$("#dialog").effect("shake");
-						}
-					}
-				}
-			],
-			modal: true
-		});
-	});
-</script>' .PHP_EOL;
-					echo Holidays::$c_tail;
-				} elseif( $p_note[ 'confirm' ] === 'confirmed' ) {
-					$t_note = '';
-					if( !empty( $p_note[ 'note' ])) {
-						$t_note = $p_note[ 'note' ];
-					}
-					// Delete the holiday
-					//$this->Holiday_model->delete_holiday( $t_holiday_id );
-					// Send an email to the requester
-					$this->send_denied_email( $t_holiday, $t_note );
-					echo Holidays::$c_head;
-					echo '<h1>Request denied</h1><p>The holiday has been denied. Close this tab/window if you don\'t need it.</p>';
-					echo Holidays::$c_tail;
-					die();
-				}
+				// Collect a reason - wrap in an "if", we get a POST value back from the encapsulated form
+				echo Holidays::$c_head . PHP_EOL;
+				echo '<script type="application/javascript">$(document).ready(function() {
+    BootstrapDialog.alert({
+        title: \'Confirm denial\',
+        message: \'<form  action="' . base_url('/' . $this->uri->uri_string() ) .'" method="POST" id="deny-form"><input type="checkbox" name="confirm" id="confirm-request" value="confirmed">&nbsp; I am denying the requested holiday.</input><br/><br/><label for="deny-note">Note &nbsp;</label><input type="text" name="note" id="deny-note"/></form>\',
+        callback: function(result) {
+			$("form#deny-form").submit(); //submit the encapsulated form
+        }
+    });
+});</script>' . PHP_EOL;
+				echo Holidays::$c_tail;
 			} else {
-				// Log naughtiness
-				echo "Unrecognised action!";
+				echo Holidays::$c_head . PHP_EOL;
+				echo '<script type="application/javascript">$(document).ready(function() {
+    BootstrapDialog.alert({
+        title: \'Unrecognised action\',
+        message: \'The requested action is unknown.\',
+        type: BootstrapDialog.TYPE_WARNING,
+        callback: function(result) {
+            window.close();
+        }
+     });
+});</script>' . PHP_EOL;
+				echo Holidays::$c_tail;
 				die();
 			}
 		} else {
-			// Log naughtiness
-			echo "Nonce did not verify!";
+			echo Holidays::$c_head . PHP_EOL;
+			echo '<script type="application/javascript">$(document).ready(function() {
+    BootstrapDialog.alert({
+        title: \'Request unverified\',
+        message: \'The holiday request could not be verified.\',
+        type: BootstrapDialog.TYPE_WARNING,
+        callback: function(result) {
+            window.close();
+        }
+     });
+});</script>' . PHP_EOL;
+			echo Holidays::$c_tail;
 			die();
 		}
 	}
@@ -392,7 +432,8 @@ class Holidays extends CI_Controller
 <p>If the link doesn\'t work, copy it into a web browser manually.</p>
 <p>If you didn\'t make this request, please click on the following link:</p>
 <a href="' . $t_cancel_url . '">' . $t_cancel_url . '</a>
-<p>If the link doesn\'t work, copy it into a web browser manually.</p></div>' . PHP_EOL . Holidays::$c_tail;
+<p>If the link doesn\'t work, copy it into a web browser manually.</p>
+<p><em style="font-size: small;">This is an automated email. Please do not reply.</em></p></div>' . PHP_EOL . Holidays::$c_tail;
 
 			// Send the email
 			$this->send_email( $t_email_config );
@@ -434,7 +475,8 @@ class Holidays extends CI_Controller
 <p>If the link doesn\'t work, copy it into a web browser manually.</p>
 <p>To deny the request, please click on the following link:</p>
 <a href="' . $t_deny_url . '">' . $t_deny_url . '</a>
-<p>If the link doesn\'t work, copy it into a web browser manually.</p></div>' . PHP_EOL . Holidays::$c_tail;
+<p>If the link doesn\'t work, copy it into a web browser manually.</p>
+<p><em style="font-size: small;">This is an automated email. Please do not reply.</em></p></div>' . PHP_EOL . Holidays::$c_tail;
 
 			// Send the email
 			$this->send_email( $t_email_config );
@@ -459,7 +501,11 @@ class Holidays extends CI_Controller
 		$t_email_config[ 'to' ] = $this->Staff_model->get_email_by_id( $p_holiday[ 'staff_id' ]);
 		$t_email_config[ 'cc' ]  = array( 'holidays@ggpsystems.co.uk' );
 		$t_email_config[ 'subject' ] = 'Holiday request approved';
-		$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong>\'s requested <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong> has been approved.</p></div>' . PHP_EOL . Holidays::$c_tail;
+		$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user .
+			'</strong>\'s requested <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' .
+			$t_date . '</strong> has been approved.</p>
+			<p><em style="font-size: small;">This is an automated email. Please do not reply.</em></p></div>' .
+			PHP_EOL . Holidays::$c_tail;
 
 		// Send the email
 		$this->send_email( $t_email_config );
@@ -485,7 +531,8 @@ class Holidays extends CI_Controller
 		$t_email_config[ 'subject' ] = 'Holiday request denied';
 		$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong>\'s requested <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong> has been denied.</p>';
 		if( !empty( $p_note )) {
-			$t_email_config[ 'message' ] .= '<p>The following note was included: <em>"' . $p_note . '"</em>.</p></div>';
+			$t_email_config[ 'message' ] .= '<p>The following note was included: <em>"' . $p_note . '"</em>.</p>
+			<p><em style="font-size: small;">This is an automated email. Please do not reply.</em></p></div>';
 		};
 		$t_email_config[ 'message' ] .= PHP_EOL . Holidays::$c_tail;
 

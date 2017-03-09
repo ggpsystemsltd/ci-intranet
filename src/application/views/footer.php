@@ -1,6 +1,6 @@
     <div class="address">
-        <address>Author: [ {author_mailto} ]<br>
-        Copyright &copy; <?php echo date('o'); ?> GGP Systems Ltd<br>
+        <address>Author: {author_mailto} <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span><br>
+        Copyright <span class="glyphicon glyphicon-copyright-mark" aria-hidden="true"></span> <?php echo date('o'); ?> GGP Systems Ltd<br>
         Page rendered in <?php echo $this->benchmark->elapsed_time(); ?> seconds; <?php echo date('c'); ?><br>
         Remote IP: {remote_ip}</address>
     </div> <!-- address -->

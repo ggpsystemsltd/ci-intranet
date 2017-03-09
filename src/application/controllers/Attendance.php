@@ -61,7 +61,6 @@ class Attendance extends CI_Controller {
 		}
 
         $data = array(
-            'intranet_title' => 'Staff Attendance (GGP intranet)',
             'intranet_heading' => 'Staff Attendance',
 			'intranet_secondary' => date( 'd-m-Y' ),
 			'intranet_user' => filter_input( INPUT_SERVER, 'INTRANET_USER' ),
@@ -71,8 +70,7 @@ class Attendance extends CI_Controller {
             'meta_description' => 'Staff attendance record.',
             'keywords' => 'staff attendance',
             'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
-			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane',
-				array( 'class' => 'link-mailto' )),
+			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane' ),
 			'style' => '',
 			'javascript' => '',
 		);

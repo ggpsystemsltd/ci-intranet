@@ -35,29 +35,6 @@ $(document).ready(function() {
         maxDate: new Date(new Date().getFullYear()+1, 2, 31, 23, 59)
     });
 
-    // confirmation dialog
-    // bind to submit button
-    $('#dialog').dialog({
-        autoOpen: false,
-        buttons: [
-            {
-                text: 'Ok',
-                icons: {
-                    primary: 'ui-icon-check'
-                },
-                click: function(){
-                    if($('#confirm-request').is(':checked')){
-                        $(this).dialog('close');
-                        $('form#holiday-form').submit(); // submit the underlying form
-                    } else {
-                        $('#dialog').effect('shake');
-                    }
-                }
-            }
-        ],
-        modal: true
-    });
-
     // Validation to enable the submit button
     myStartDate.change(function(){
         if(myStartDate.val()!=''){
@@ -124,7 +101,17 @@ $(document).ready(function() {
     });
 
     mySubmitButton.click(function() {
-        $('#dialog').dialog('open');
+        BootstrapDialog.confirm({
+            title: 'Confirm request',
+            message: 'Confirm that you are the user selected and that you wish to request the specified holiday?',
+            btnOKLabel: 'Request holiday',
+            callback: function(result){
+                if(result) {
+                    $('form#holiday-form').submit(); // submit the underlying form
+                    BootstrapDialog.alert('An email has been sent to the selected user confirming the request. It contains a link that must be clicked to confirm the request.');
+                }
+            }
+        });
     });
 
     myCancelButton.click(function() {
@@ -133,7 +120,6 @@ $(document).ready(function() {
         myEndAM.prop('disabled', true);
         myEndFull.prop('disabled', true);
         $( '.date-picker' ).datepicker('option', 'minDate', new Date());
-
 
         mySubmitButton.switchClass('btn-success','btn-default');
         mySubmitButton.prop('disabled', true);

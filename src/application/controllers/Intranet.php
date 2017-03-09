@@ -64,7 +64,6 @@ class Intranet extends CI_Controller {
 		}
 
 		$data = array(
-			'intranet_title' => 'Telephone Directory (GGP intranet)',
 			'intranet_heading' => 'Internal Telephone Directory',
 			'intranet_secondary' => $order,
 			'intranet_user' => filter_input( INPUT_SERVER, 'INTRANET_USER' ),
@@ -74,8 +73,7 @@ class Intranet extends CI_Controller {
 			'keywords' => 'telephone directory, internal directory, extensions',
 			'refresh' => '<meta http-equiv="refresh" content="30" />',
 			'remote_ip' => $s_remote_ip,
-			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane',
-				array( 'class' => 'link-mailto' )),
+			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane' ),
 			'style' => '',
 			'javascript' => '<script type="text/javascript">$(\'#legend\').click(function(){
         $(\'.form-content\').toggle();
