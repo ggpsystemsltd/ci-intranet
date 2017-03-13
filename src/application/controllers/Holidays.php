@@ -20,7 +20,7 @@ class Holidays extends CI_Controller
 	<link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css" type="text/css" />
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" type="text/css" />
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-	<style type="text/css">body {width: 640px; font-family: Roboto, sans-serif; font-size: 14px;}</style>
+	<style type="text/css">body {width: 640px; font-family: Roboto, sans-serif; font-size: 16px;}</style>
     <script src="//code.jquery.com/jquery-1.12.4.js" type="application/javascript"></script>
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js" type="application/javascript"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous" type="application/javascript"></script>
@@ -44,6 +44,8 @@ class Holidays extends CI_Controller
 		$this->load->library( array( 'parser' ));
 		$this->load->model( array( 'Holiday_model', 'Nonce_model', 'Staff_model' ));
 
+		$p_holiday_id = $this->input->post('holiday_id', true);
+
 		$data = array(
 			'intranet_heading' => 'Staff Holidays',
 			'intranet_secondary' => date( 'd-m-Y' ),
@@ -56,8 +58,9 @@ class Holidays extends CI_Controller
 			'remote_ip' => filter_input( INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP ),
 			'author_mailto' => safe_mailto( 'murray.crane@ggpsystems.co.uk', 'Murray Crane' ),
 			'style' => '	<link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css" type="text/css" />',
-			'javascript' => '<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js" type="text/javascript"></script>
-	<script src="' . base_url( '/assets/js/holidays.js' ) . '" type="text/javascript"></script>',
+			'javascript' => '<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js" type="application/javascript"></script>
+	<script src="' . base_url( '/assets/js/jquery-redirect.js' ) . '" type="application/javascript"></script>
+	<script src="' . base_url( '/assets/js/holidays.js' ) . '" type="application/javascript"></script>',
 		);
 
 		// Vacations table - array will be empty if no holidays
@@ -68,26 +71,32 @@ class Holidays extends CI_Controller
 			0 => array( 'column' => 'Name'),
 			1 => array( 'column' => 'Dates'),
 			2 => array( 'column' => '' ),
+			3 => array( 'column' => '' ),
 		);
 		if( empty( $t_holidays )) {
 			$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => ''),
 				1 => array( 'class' => '', 'value' => ''),
-				2 => array( 'class' => '', 'value' => '')),
+				2 => array( 'class' => '', 'value' => ''),
+				3 => array( 'class' => '', 'value' => '')),
 			);
 		} else {
 			foreach( $t_holidays as $t_holiday ) {
 				$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 					0 => array( 'class' => '', 'value' => $t_holiday[ 'name' ]),
 					1 => array( 'class' => 'class="' . $t_holiday[ 'class' ] . '"', 'value' => $t_holiday[ 'dates' ]),
-					2 => array( 'class' => '', 'value' => '<button type="button" id="cancel-btn-' . $t_holiday[ 'id' ] .
+					2 => array( 'class' => '', 'value' => '<button type="button" data-toggle="tooltip" id="edit-btn-' . $t_holiday[ 'id' ] .
+						'" name="save" class="btn btn-primary" onclick="$.redirect(\'' . base_url('/' .
+						$this->uri->uri_string() ) . '\', {\'holiday_id\': \'' . $t_holiday[ 'id' ] . '\'});" ' .
+						'title="Edit request"><span class="glyphicon glyphicon-pencil"></span></button>' ),
+					3 => array( 'class' => '', 'value' => '<button type="button" data-toggle="tooltip" id="cancel-btn-' . $t_holiday[ 'id' ] .
 						'" name="save" class="btn btn-warning" onclick="BootstrapDialog.show({title: \'Delete request\',' .
 						' message: \'I confirm that I am the user that requested this holiday and that I wish to ' .
 						'delete the request.\', type: BootstrapDialog.TYPE_WARNING, buttons: [{label: \'Cancel\', ' .
 						'action: function(dialog) {dialog.close();}},{icon: \'glyphicon glyphicon-trash\', label: ' .
 						'\'Delete request\', cssClass: \'btn-warning\', action: function(dialog) {' .
 						'window.location.replace(\'' . base_url('/' . $this->uri->uri_string() ) . '/action/delete/' .
-						$t_holiday[ 'id' ] . '\'); dialog.close();}}]});"><span class="glyphicon glyphicon-trash">' .
+						$t_holiday[ 'id' ] . '\'); dialog.close();}}]});" title="Delete request"><span class="glyphicon glyphicon-trash">' .
 						'</span></button>' )),
 				);
 			}
@@ -97,40 +106,93 @@ class Holidays extends CI_Controller
 		$t_holidays_data[ 'updated' ] = $this->Holiday_model->get_last_update();
 
 		// Form data
+		$t_prepop = false;
+		$t_start_am = false;
+		$t_start_pm = false;
+		$t_start_full = false;
+		$t_end_am = false;
+		$t_end_full = false;
+		$t_holiday = array( 'email' => '', 'start_date' => '', 'end_date' => '', 'note' => '' );
+		if( !empty( $p_holiday_id )) {
+			$t_holiday = $this->Holiday_model->get_holiday( $p_holiday_id );
+			$t_holiday[ 'email' ] = $this->Staff_model->get_email_by_id( $t_holiday[ 'staff_id' ]);
+			$t_holiday[ 'start_date' ] = explode( ' ', $t_holiday[ 'start' ] )[0];
+			$t_holiday[ 'end_date' ] = explode( ' ', $t_holiday[ 'end' ] )[0];
+			if( explode( ' ', $t_holiday[ 'start' ] )[1] == "13:00:00") {
+				$t_start_pm = true;
+				$t_end_full = true;
+			} else {
+				if(explode( ' ', $t_holiday[ 'end' ] )[1] == "13:00:00") {
+					$t_start_am = true;
+					$t_end_am = true;
+				} else {
+					$t_start_full = true;
+					$t_end_full = true;
+				}
+			}
+			$t_prepop = true;
+		}
 		$t_users = $this->Staff_model->get_staff_list();
 		$t_form_data[ 'variable' ] = '		<div id="legend" class="btn btn-default clearfix">Request a holiday</div>
-		<div class="form-content row" style="display: none;">
+		<div class="form-content row"';
+		if( !$t_prepop ) {
+			$t_form_data[ 'variable' ] .= ' style="display: none;"';
+		}
+		$t_form_data[ 'variable' ] .= '>
 			<form action="' . base_url( '/holidays/request' ) . '" method="post" id="holiday-form" class="form-horizontal" accept-charset="utf-8">
-				<div class="form-group">
-					<label class="col-sm-2 control-label">Select user</label>
+				<div class="form-group">';
+		if( $t_prepop ) {
+			$t_form_data[ 'variable'] .= '					<input type="hidden" name="holiday_id" value="' . $p_holiday_id . '" />';
+		}
+		$t_form_data[ 'variable' ] .= '					<label class="col-sm-2 control-label">Select user</label>
 					<div class="col-sm-4">' .PHP_EOL;
-		$t_form_data[ 'variable' ] .= form_dropdown( 'user', $t_users, '', array( 'id' => 'name', 'class' => 'form-control' ));
+		$t_form_data[ 'variable' ] .= form_dropdown( 'user', $t_users, array( $t_holiday[ 'email' ]), array( 'id' => 'name', 'class' => 'form-control' ));
 		$t_form_data[ 'variable' ] .= '					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-2 control-label">Start</label>
 					<div class="col-sm-4 input-group" style="padding-left: 15px; padding-right: 15px;">
-						<input type="text" id="start-date" name="start_date" class="form-control date-picker" placeholder="Start date">
+						<input type="text" id="start-date" name="start_date" class="form-control date-picker" placeholder="Start date"';
+		if( $t_prepop ) {
+			$t_form_data[ 'variable' ] .= ' value="' . $t_holiday[ 'start_date' ] . '"';
+		}
+		$t_form_data[ 'variable' ] .= '>
 						<span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
 					</div>
 				</div>
 				<div class="form-group">
 					<div class="col-sm-4 col-sm-offset-2 ">
 						<label class="radio-inline">
-							<input type="radio" name="start_type" id="start-am" value="am"> Half day AM
+							<input type="radio" name="start_type" id="start-am" value="am"';
+		if( $t_start_am ) {
+			$t_form_data[ 'variable' ] .= ' checked="checked"';
+		}
+		$t_form_data[ 'variable' ] .= '> Half day AM
 						</label>
 						<label class="radio-inline">
-							<input type="radio" name="start_type" id="start-pm" value="pm"> Half day PM
+							<input type="radio" name="start_type" id="start-pm" value="pm"';
+		if( $t_start_pm ) {
+			$t_form_data[ 'variable' ] .= ' checked="checked"';
+		}
+		$t_form_data[ 'variable' ] .= '> Half day PM
 						</label>
 						<label class="radio-inline">
-							<input type="radio" name="start_type" id="start-full" value="full"> Full day
+							<input type="radio" name="start_type" id="start-full" value="full"';
+		if( $t_start_full ) {
+			$t_form_data[ 'variable' ] .= ' checked="checked"';
+		}
+		$t_form_data[ 'variable' ] .= '> Full day
 						</label>
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-2 control-label">End</label>
 					<div class="col-sm-4 input-group" style="padding-left: 15px; padding-right: 15px;">
-						<input type="text" id="end-date" name="end_date" class="form-control date-picker" placeholder="End date">
+						<input type="text" id="end-date" name="end_date" class="form-control date-picker" placeholder="End date"';
+		if( $t_prepop ) {
+			$t_form_data[ 'variable' ] .= ' value="' . $t_holiday[ 'end_date' ] . '"';
+		}
+		$t_form_data[ 'variable' ] .= '>
 						<span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
 					</div>
 					<span id="end-help-block" class="col-sm-5 col-sm-offset-2 help-block" style="display: none;">Change the end date only if you are requesting a multi-day holiday.</span>
@@ -138,17 +200,29 @@ class Holidays extends CI_Controller
 				<div class="form-group">
 					<div class="col-sm-4 col-sm-offset-2 " id="end-type">
 						<label class="radio-inline">
-							<input type="radio" name="end_type" id="end-am" value="am"> Half day AM
+							<input type="radio" name="end_type" id="end-am" value="am"';
+		if( $t_end_am ) {
+			$t_form_data[ 'variable' ] .= ' checked="checked"';
+		}
+		$t_form_data[ 'variable' ] .= '> Half day AM
 						</label>
 						<label class="radio-inline">
-							<input type="radio" name="end_type" id="end-full" value="full"> Full day
+							<input type="radio" name="end_type" id="end-full" value="full"';
+		if( $t_end_full ) {
+			$t_form_data[ 'variable' ] .= ' checked="checked"';
+		}
+		$t_form_data[ 'variable' ] .= '> Full day
 						</label>
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-2 control-label">Note</label>
 					<div class="col-sm-4">
-						<input type="text" id="note" name="note" class="form-control" placeholder="Explanatory note">
+						<input type="text" id="note" name="note" class="form-control" placeholder="Explanatory note"';
+		if( $t_prepop ) {
+			$t_form_data[ 'variable' ] .= ' value="' . $t_holiday[ 'note' ] . '"';
+		}
+		$t_form_data[ 'variable' ] .= '>
 					</div>
 				</div>
 				<div class="form-group">
@@ -177,24 +251,13 @@ class Holidays extends CI_Controller
 		$t_request_id = (int)$this->uri->segment( 4, 0 );
 		$t_holiday = $this->Holiday_model->get_holiday( $t_request_id );
 
-
 		switch( $t_action ) {
 			case 'delete':
 				$this->Holiday_model->delete_holiday( $t_request_id );
 				if( $t_holiday[ 'confirmed' ] == 1 ) {
 					$this->send_cancelled_email( $t_holiday );
 				}
-				echo Holidays::$c_head . PHP_EOL;
-				echo '<script type="application/javascript">$(document).ready(function() {
-    BootstrapDialog.alert({
-        title: \'Request cancelled\',
-        message: \'The holiday request has been cancelled.\',
-        callback: function(result) {
-            window.location.replace(\'' . base_url('/' . $this->uri->segment( 1, 0 )) . '\');
-        }
-    });
-});</script>' . PHP_EOL;
-				echo Holidays::$c_tail;
+				redirect( base_url( '/' . $this->uri->segment( 1, 0 )));
 				break;
 			default:
 		}
@@ -204,8 +267,10 @@ class Holidays extends CI_Controller
 	{
 		$this->load->model( array( 'Staff_model' ));
 
+		// @todo Handle edited requests as well as new - holiday_id will be set.
 		// Possible post values: user (email address), start_date/end_date (date), start_type/end_type (am/pm/full), note (text)
 		$t_request = array();
+		$t_request[ 'id' ] = $this->input->post( 'holiday_id', false );
 		$t_request[ 'email' ] = strtolower( $this->input->post( 'user', true ));
 		$t_request[ 'staff_id' ] = $this->Staff_model->get_id_by_email( $this->input->post( 'user', true ));
 		$t_request[ 'start' ] = $this->input->post( 'start_date', true );
@@ -262,6 +327,7 @@ class Holidays extends CI_Controller
 		}
 
 		// Do stuff with the POSTed values. Send a confirmation email to the requesting user.
+		var_dump($t_request);
 		$this->send_confirmation_email( $t_request );
 		$t_uri = '/'. explode( '/', uri_string() )[0];
 		redirect( $t_uri );
@@ -449,7 +515,12 @@ class Holidays extends CI_Controller
 				'confirmed' => 0,
 				'approved' => 0,
 				'nonce' => '');
-			$t_request_id = $this->Holiday_model->insert_holiday( $t_holiday_data );
+			if( !$p_holiday[ 'id' ]) {
+				$t_request_id = $this->Holiday_model->insert_holiday( $t_holiday_data );
+			} else {
+				$t_request_id = $p_holiday[ 'id' ];
+				$this->Holiday_model->update_holiday( $t_request_id, $t_holiday_data );
+			}
 
 			$t_serialized = serialize( $p_holiday );
 			$t_nonce = $this->Nonce_model->get_crc32( $t_request_id, $t_serialized, true );
