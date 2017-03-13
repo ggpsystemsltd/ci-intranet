@@ -42,6 +42,22 @@ class Download_log extends CI_Controller
     });</script>',
 		);
 
+		$t_nav_data = array(
+			'base_url' => base_url(),
+			'attendance_active' => '',
+			'attendance_active_span' => '',
+			'dllog_active' => ' class="active"',
+			'dllog_active_span' => '<span class="sr-only">(current)</span>',
+			'holidays_active' => '',
+			'holidays_active_span' => '',
+			'intranet_active' => '',
+			'intranet_active_span' => '',
+			'machines_active' => '',
+			'machines_active_span' => '',
+			'wol_active' => '',
+			'wol_active_span' => '',
+		);
+
 		$t_table_data[ 'title' ] = '';
 		$t_table_data[ 'class' ] = 'col-md-8';
 		$t_table_data[ 'head' ] = array(
@@ -119,6 +135,8 @@ class Download_log extends CI_Controller
 		$t_form_data[ 'variable_post' ] = '';
 
 		$this->parser->parse( 'header', $data );
+		$this->parser->parse( 'navbar', $t_nav_data );
+		$this->parser->parse( 'heading', $data );
 		$this->parser->parse( 'row-start', array());
 		$this->parser->parse( 'table', $t_table_data );
 		$this->parser->parse( 'row-stop', array());

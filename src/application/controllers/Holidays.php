@@ -63,6 +63,22 @@ class Holidays extends CI_Controller
 	<script src="' . base_url( '/assets/js/holidays.js' ) . '" type="application/javascript"></script>',
 		);
 
+		$t_nav_data = array(
+			'base_url' => base_url(),
+			'attendance_active' => '',
+			'attendance_active_span' => '',
+			'dllog_active' => '',
+			'dllog_active_span' => '',
+			'holidays_active' => ' class="active"',
+			'holidays_active_span' => '<span class="sr-only">(current)</span>',
+			'intranet_active' => '',
+			'intranet_active_span' => '',
+			'machines_active' => '',
+			'machines_active_span' => '',
+			'wol_active' => '',
+			'wol_active_span' => '',
+		);
+
 		// Vacations table - array will be empty if no holidays
 		$t_holidays = $this->Holiday_model->get_holidays("3 month");
 		$t_holidays_data[ 'title' ] = '';
@@ -236,6 +252,8 @@ class Holidays extends CI_Controller
 		$t_form_data[ 'variable_post' ] = '';
 
 		$this->parser->parse( 'header', $data );
+		$this->parser->parse( 'navbar', $t_nav_data );
+		$this->parser->parse( 'heading', $data );
 		$this->parser->parse( 'row-start', array() );
 		$this->parser->parse( 'table', $t_holidays_data );
 		$this->parser->parse( 'row-stop', array() );

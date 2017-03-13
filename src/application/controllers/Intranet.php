@@ -80,6 +80,22 @@ class Intranet extends CI_Controller {
     });</script>',
 		);
 
+		$t_nav_data = array(
+			'base_url' => base_url(),
+			'attendance_active' => '',
+			'attendance_active_span' => '',
+			'dllog_active' => '',
+			'dllog_active_span' => '',
+			'holidays_active' => '',
+			'holidays_active_span' => '',
+			'intranet_active' => ' class="active"',
+			'intranet_active_span' => '<span class="sr-only">(current)</span>',
+			'machines_active' => '',
+			'machines_active_span' => '',
+			'wol_active' => '',
+			'wol_active_span' => '',
+		);
+
 		// Telephone directory table
 		$t_table_data[ 'title' ] = '';
 		$t_table_data[ 'class' ] = 'col-md-6';
@@ -124,6 +140,8 @@ class Intranet extends CI_Controller {
 		$t_form_data[ 'variable_post' ] = '';
 
 		$this->parser->parse( 'header', $data );
+		$this->parser->parse( 'navbar', $t_nav_data );
+		$this->parser->parse( 'heading', $data );
 		$this->parser->parse( 'row-start', array() );
 		$this->parser->parse( 'table', $t_table_data );
 		$this->parser->parse( 'row-stop', array() );

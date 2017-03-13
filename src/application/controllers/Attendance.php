@@ -75,6 +75,22 @@ class Attendance extends CI_Controller {
 			'javascript' => '',
 		);
 
+		$t_nav_data = array(
+			'base_url' => base_url(),
+			'attendance_active' => ' class="active"',
+			'attendance_active_span' => '<span class="sr-only">(current)</span>',
+			'dllog_active' => '',
+			'dllog_active_span' => '',
+			'holidays_active' => '',
+			'holidays_active_span' => '',
+			'intranet_active' => '',
+			'intranet_active_span' => '',
+			'machines_active' => '',
+			'machines_active_span' => '',
+			'wol_active' => '',
+			'wol_active_span' => '',
+		);
+
 		// Attendance table
 		$t_attendance_data[ 'title' ] = '';
         $t_attendance_data[ 'class' ] = 'col-md-4';
@@ -124,6 +140,8 @@ class Attendance extends CI_Controller {
 		$t_holidays_data[ 'updated' ] = $this->Holiday_model->get_last_update();
 
         $this->parser->parse( 'header', $data );
+		$this->parser->parse( 'navbar', $t_nav_data );
+		$this->parser->parse( 'heading', $data );
 		$this->parser->parse( 'row-start', array());
         $this->parser->parse( 'table', $t_attendance_data );
 		if( $t_display_holidays ) {

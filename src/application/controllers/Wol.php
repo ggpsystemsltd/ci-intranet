@@ -61,6 +61,22 @@ class Wol extends CI_Controller
 			'javascript' => '',
 		);
 
+		$t_nav_data = array(
+			'base_url' => base_url(),
+			'attendance_active' => '',
+			'attendance_active_span' => '',
+			'dllog_active' => '',
+			'dllog_active_span' => '',
+			'holidays_active' => '',
+			'holidays_active_span' => '',
+			'intranet_active' => '',
+			'intranet_active_span' => '',
+			'machines_active' => '',
+			'machines_active_span' => '',
+			'wol_active' => ' class="active"',
+			'wol_active_span' => '<span class="sr-only">(current)</span>',
+		);
+
 		$t_form_open['data'] = '			<form action="' . base_url( '/wol/wake' ) .
 			'" method="post" id="wol-form" class="form-horizontal" accept-charset="utf-8">';
 		$t_form_close['data'] = '			</form>';
@@ -87,6 +103,8 @@ class Wol extends CI_Controller
 		$t_table_data[ 'updated' ] = $this->Machine_model->get_last_update();
 
 		$this->parser->parse( 'header', $data );
+		$this->parser->parse( 'navbar', $t_nav_data );
+		$this->parser->parse( 'heading', $data );
 		$this->parser->parse( 'inject', $t_form_open );
 		$this->parser->parse( 'row-start', array());
 		$this->parser->parse( 'table', $t_table_data );
@@ -97,10 +115,8 @@ class Wol extends CI_Controller
 
 	# Wake on LAN - (c) HotKey@spr.at, upgraded by Murzik
 	# Modified by Allan Barizo http://www.hackernotcracker.com
-	public function wake()
+	public function wake_old()
 	{
-		$this->load->helper( array(  'url' ));
-
 		$t_broadcast_address = "10.0.0.255";
 		$t_socket_number = "7";
 		$t_uri = '/'. explode( '/', uri_string() )[0];
@@ -109,7 +125,6 @@ class Wol extends CI_Controller
 		$t_name = $p_values[ 0 ];
 		$t_mac = strtoupper( $p_values[ 1 ]);
 
-		echo $this::$c_header . PHP_EOL;
 
 		$t_address_byte = explode(':', $t_mac);
 		$t_hardware_address = '';
@@ -129,15 +144,54 @@ class Wol extends CI_Controller
 				echo '	<script type="text/javascript">BootstrapDialog.alert({type: BootstrapDialog.TYPE_WARNING, message: \'setsockopt() failed, error:  ' . socket_strerror($t_option_return) . ' ' . socket_strerror(socket_last_error($t_socket)) . '\', callback: function(result){if(result) {window.location.replace(\'' . base_url('/' . $t_uri) . '\');}}});</script>' . PHP_EOL;
 			}
 			if (socket_sendto($t_socket, $t_msg, strlen($t_msg), 0, $t_broadcast_address, $t_socket_number)) {
-				echo '<script type="text/javascript">BootstrapDialog.alert({message: \'Magic packet sent to wake  ' . $t_name . ' [' . $t_mac . ']\', callback: function(result){if(result){window.location.replace(\'' . base_url('/' . $t_uri) . '\');}}});</script>' . PHP_EOL;
 				socket_close($t_socket);
 			} else {
 				echo '<script type="text/javascript">BootstrapDialog.alert({type: BootstrapDialog.TYPE_WARNING, message: \'Magic packet failed\', callback: function(result){if(result){window.location.replace(\'' . base_url('/' . $t_uri) . '\');}}});</script>' . PHP_EOL;
 			}
 		}
-		echo $this::$c_footer;
+	}
+
+	//public function wol($broadcast, $mac)
+	public function wake()
+	{
+		$this->load->helper( array(  'url' ));
+
+		$t_uri = '/'. explode( '/', uri_string() )[0];
+
+		$p_values = unserialize($this->input->post( 'wake', true ));
+		$t_name = $p_values[ 0 ];
+		$t_mac = strtoupper( $p_values[ 1 ]);
+		$broadcast = "10.0.0.255";
+
+		$hwaddr = pack('H*', preg_replace('/[^0-9a-zA-Z]/', '', $t_mac) );
+
+		// Create Magic Packet
+		$packet = '';
+		for ($i = 1; $i <= 6; $i++)
+		{
+			$packet .= chr(255);
+		}
+
+		for ($i = 1; $i <= 16; $i++)
+		{
+			$packet .= $hwaddr;
+		}
+
+		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		if ($sock)
+		{
+			$options = socket_set_option($sock, 1, 6, true);
+
+			if ($options >=0)
+			{
+				$e = socket_sendto($sock, $packet, strlen($packet), 0, $broadcast, 7);
+				echo $this::$c_header . PHP_EOL;
+				echo '<script type="text/javascript">BootstrapDialog.alert({message: \'Magic packet sent to wake  ' . $t_name . ' [' . $t_mac . ']\', callback: function(result){if(result){window.location.replace(\'' . base_url('/' . $t_uri) . '\');}}});</script>' . PHP_EOL;
+				echo $this::$c_footer;
+				socket_close($sock);
+			}
+		}
 	}
 }
-
 /* End of file Wol.php */
 /* Location: application/controllers/Wol.php */
