@@ -1,7 +1,5 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: murray.crane
- * Date: 13/03/2017
- * Time: 15:10
- */
+<div class="container-fluid">
+	<div class="jumbotron">
+		<h1>{intranet_heading}<br>
+			<small>{intranet_secondary}</small></h1>
+	</div>
