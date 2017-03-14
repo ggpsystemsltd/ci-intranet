@@ -5,8 +5,8 @@
  *
  * @author Murray Crane <murray.crane@ggpsystems.co.uk>
  * @copyright 2017 (c) GGP Systems Limited
- * @license http://www.gnu.org/licenses/gpl.html
- * @version 2.0
+ * @license https://tldrlegal.com/license/bsd-3-clause-license-%28revised%29#fulltext
+ * @version 2.1
  */
 class Attendance_model extends CI_Model
 {
