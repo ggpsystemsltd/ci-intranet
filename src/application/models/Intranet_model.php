@@ -65,6 +65,7 @@ class Intranet_model extends CI_Model
 						|| time() <= $this->day_end( $row[ 'end_date' ]))) {
 					$return[] = array(
 						'class' => $this->get_presence( $row[ 'xmpp' ]),
+						'staff_id' => $row[ 'staff_id' ],
 						'extn' => $row[ 'extn' ],
 						'name' => $row[ 'name' ],
 						'externals' => ($p_show_externals) ? $this->get_externals($row[ 'staff_id' ] ) : "",

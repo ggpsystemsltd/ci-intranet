@@ -44,6 +44,21 @@ class Attendance_model extends CI_Model
 		return $t_return;
 	}
 
+	public function get_attendance_by_id( $p_staff_id )
+	{
+		$t_return = false;
+		$this->db->select( 'work_state' );
+		$this->db->where( 'staff_id', $p_staff_id );
+		$this->db->order_by( 'firstname' );
+		$query = $this->db->get( 'staff' );
+		if( $query->num_rows() > 0 ) {
+			foreach( $query->result_array() as $row ) {
+				$t_return = $row[ 'work_state' ];
+			}
+		}
+		return $t_return;
+	}
+
 	/**
 	 * update - update a given staff record field with a given value
 	 *

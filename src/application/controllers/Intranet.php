@@ -20,7 +20,7 @@ class Intranet extends CI_Controller {
 	public function index() {
 		$this->load->helper( 'form' );
 		$this->load->library( array( 'form_validation', 'parser' ));
-		$this->load->model( array ( 'Intranet_model' ));
+		$this->load->model( array ( 'Attendance_model', 'Holiday_model', 'Intranet_model' ));
 
 		// We have noIP FQDNs for Roger, Bexhill and Vincent Road. 
 		// Do a DNS lookup and compare?
@@ -98,7 +98,7 @@ class Intranet extends CI_Controller {
 
 		// Telephone directory table
 		$t_table_data[ 'title' ] = '';
-		$t_table_data[ 'class' ] = 'col-md-6';
+		$t_table_data[ 'class' ] = 'col-md-3';
 		$t_table_data[ 'head' ] = array(
 			0 => array( 'class' => '', 'column' => 'Extn' ),
 			1 => array( 'class' => '', 'column' => 'Name' ),
@@ -106,13 +106,38 @@ class Intranet extends CI_Controller {
 		);
 		$t_telephones = $this->Intranet_model->get_staff( $p_order, $b_show_externals );
 		foreach( $t_telephones as $t_telephone ) {
+			$t_name = $t_telephone[ 'name' ];
+			if( $this->Attendance_model->get_attendance_by_id( $t_telephone[ 'staff_id' ] ) == 'Vacation' ) {
+				$t_name .= " <em>(On vacation)</em>";
+			}
 			$t_table_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => $t_telephone[ 'extn' ]),
-				1 => array( 'class' => 'class="' . $t_telephone[ 'class' ] . '"', 'value' => $t_telephone[ 'name' ]),
+				1 => array( 'class' => 'class="' . $t_telephone[ 'class' ] . '"', 'value' => $t_name ),
 				2 => array( 'class' => ( $b_show_externals ) ? '' : 'class="hidden"', 'value' => $t_telephone[ 'externals' ])),
 			);
 		}
 		$t_table_data[ 'updated' ] = date( 'Y-m-d H:i:s' );
+
+		// Vacations table - $t_holidays will be empty if no holidays
+		$t_display_holidays = true;
+		$t_holidays = $this->Holiday_model->get_holidays_this_week();
+		if( !empty( $t_holidays )) {
+			$t_holidays_data[ 'class' ] = 'col-md-3 hidden-print';
+			$t_holidays_data[ 'title' ] = '<h2>Current/upcoming holidays</h2>' . PHP_EOL;
+			$t_holidays_data[ 'head' ] = array(
+				0 => array( 'column' => 'Name'),
+				1 => array( 'column' => 'Dates'),
+			);
+			foreach( $t_holidays as $t_holiday ) {
+				$t_holidays_data[ 'row' ][] = array( 'column' => array(
+					0 => array( 'class' => '', 'value' => $t_holiday[ 'name' ]),
+					1 => array( 'class' => 'class="' . $t_holiday[ 'class' ] . '"', 'value' => $t_holiday[ 'dates' ])),
+				);
+			}
+		} else {
+			$t_display_holidays = false;
+		}
+		$t_holidays_data[ 'updated' ] = $this->Holiday_model->get_last_update();
 
 		// Telephone directory order form
 		$t_order_array = array(
@@ -144,6 +169,9 @@ class Intranet extends CI_Controller {
 		$this->parser->parse( 'heading', $data );
 		$this->parser->parse( 'row-start', array() );
 		$this->parser->parse( 'table', $t_table_data );
+		if( $t_display_holidays ) {
+			$this->parser->parse( 'table', $t_holidays_data );
+		}
 		$this->parser->parse( 'row-stop', array() );
 		$this->parser->parse( 'form', $t_form_data );
 		$this->parser->parse( 'footer', $data );
