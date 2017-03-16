@@ -184,6 +184,8 @@ class Machines extends CI_Controller {
 	public function set() {
 		$this->load->library( array( 'grocery_CRUD' ));
 
+		$this->grocery_crud->set_theme( 'bootstrap' );
+
 		$this->grocery_crud->set_table( 'machine' );
 		$this->grocery_crud->set_subject( 'Machine' );
 

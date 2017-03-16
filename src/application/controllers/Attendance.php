@@ -155,6 +155,8 @@ class Attendance extends CI_Controller {
 	{
 		$this->load->library( 'grocery_CRUD' );
 
+		$this->grocery_crud->set_theme( 'bootstrap' );
+
 		$this->grocery_crud->set_table( 'staff' );
 		$this->grocery_crud->set_subject( 'Attendance' );
 		$this->grocery_crud->columns( 'name', 'work_state' );
