@@ -738,6 +738,8 @@ class Holidays extends CI_Controller
 	{
 		$this->load->library( 'grocery_CRUD' );
 
+		$this->grocery_crud->set_theme( 'bootstrap' );
+
 		$this->grocery_crud->set_table( 'holidays' );
 		$this->grocery_crud->set_subject( 'Vacations' );
 		$this->grocery_crud->fields( 'staff_id', 'start', 'end', 'holiday_type', 'note', 'confirmed', 'approved' );

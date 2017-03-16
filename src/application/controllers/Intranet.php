@@ -153,6 +153,8 @@ class Intranet extends CI_Controller {
 	{
 		$this->load->library( 'grocery_CRUD' );
 
+		$this->grocery_crud->set_theme( 'bootstrap' );
+
 		switch( $table ) {
 			case 'fobs':
 				$this->grocery_crud->set_table( 'doorcards' );
