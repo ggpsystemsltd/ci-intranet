@@ -86,7 +86,7 @@ class Machines extends CI_Controller {
 
 		// Booking form
 		$t_users = $this->Staff_model->get_staff_list();
-		$t_form_data[ 'variable' ] = '		<div id="legend" class="btn btn-default clearfix">Book resources</div>
+		$t_form_data[ 'variable' ] = '		<div id="legend" class="btn btn-default clearfix">Request resources <span class="glyphicon glyphicon-menu-down"></span></div>
 		<div class="form-content row" style="display: none;">
 				<div class="form-group">
 					<label class="col-sm-2 control-label">Select user</label>
@@ -115,8 +115,8 @@ class Machines extends CI_Controller {
 				</div>
 				<div class="form-group">
 					<div class="col-sm-4 col-sm-offset-2">
-						<button type="button" id="submit-btn" name="save" class="btn btn-success">Submit</button>
-						<button type="reset" id="cancel-btn" name="cancel" class="btn btn-danger">Cancel</button>
+						<button type="button" id="submit-btn" name="save" class="btn btn-success"><span class="glyphicon glyphicon-ok"></span> Submit request</button>
+						<button type="reset" id="cancel-btn" name="cancel" class="btn btn-danger"><span class="glyphicon glyphicon-warning-sign"></span> Cancel</button>
 					</div>
 				</div>
 			</form>

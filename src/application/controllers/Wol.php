@@ -97,7 +97,7 @@ class Wol extends CI_Controller
 				2 => array( 'class' => '',
 					'value' => '<button class="btn btn-default" name="wake" value="' .
 						htmlspecialchars( serialize( array( $value[ 'm_name' ], $value[ 'mac_address' ] )))
-						. '">Wake machine</button>')),
+						. '"><span class="glyphicon glyphicon-play-circle"></span> Wake machine</button>')),
 			);
 		}
 		$t_table_data[ 'updated' ] = $this->Machine_model->get_last_update();
