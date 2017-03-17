@@ -107,8 +107,9 @@ class Intranet extends CI_Controller {
 		$t_telephones = $this->Intranet_model->get_staff( $p_order, $b_show_externals );
 		foreach( $t_telephones as $t_telephone ) {
 			$t_name = $t_telephone[ 'name' ];
-			if( $this->Attendance_model->get_attendance_by_id( $t_telephone[ 'staff_id' ] ) == 'Vacation' ) {
-				$t_name .= " <em>(On vacation)</em>";
+			$t_attendance = $this->Attendance_model->get_attendance_by_id( $t_telephone[ 'staff_id' ] );
+			if( $t_attendance != "NaN" ) {
+				$t_name .= " <em>$t_attendance</em>";
 			}
 			$t_table_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => $t_telephone[ 'extn' ]),
