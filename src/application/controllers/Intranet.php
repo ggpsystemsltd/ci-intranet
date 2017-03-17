@@ -146,7 +146,7 @@ class Intranet extends CI_Controller {
 			'2' => 'surname',
 			'3' => 'extension number',
 		);
-		$t_form_data[ 'variable' ] = '	<div id="legend" class="btn btn-default">Reorder directory</div>
+		$t_form_data[ 'variable' ] = '	<div id="legend" class="btn btn-default">Reorder directory <span class="glyphicon glyphicon-menu-down"></span></div>
 		<div class="form-content row" style="display:none;">
 			<form action="intranet" method="post" id="intranet-form" class="form-horizontal" accept-charset="UTF-8">
 				<div class="form-group">
@@ -158,7 +158,7 @@ class Intranet extends CI_Controller {
 				</div>
 				<div class="form-group">
 					<div class="col-sm-4 col-sm-offset-2">
-						<button type="submit" name="save" value="Save directory" class="btn btn-success">Save directory</button>
+						<button type="submit" name="save" value="Save directory" class="btn btn-success"><span class="glyphicon glyphicon-floppy-save"></span> Save directory</button>
 					</div>
 				</div>
 			</form>

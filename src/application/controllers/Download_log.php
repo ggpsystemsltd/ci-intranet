@@ -120,7 +120,7 @@ class Download_log extends CI_Controller
 
 		// Download file groups form
 		$t_file_groups = $this->download_log_model->get_file_groups();
-		$t_form_data[ 'variable' ] = '	<div id="legend" class="btn btn-default">Choose download</div>
+		$t_form_data[ 'variable' ] = '	<div id="legend" class="btn btn-default">Choose download <span class="glyphicon glyphicon-menu-down"></span></div>
 		<div class="form-content row" style="display:block;">
 			<form action="download_log" method="post" id="dmlog-form" class="form-horizontal" accept-charset="UTF-8">
 				<div class="form-group">
