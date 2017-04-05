@@ -19,6 +19,7 @@
 				<li{holidays_active}><a href="{base_url}holidays">Holidays{holidays_active_span}</a></li>
 				<li{machines_active}><a href="{base_url}machines">Machines{machines_active_span}</a></li>
 				<li{intranet_active}><a href="{base_url}intranet">Telephone Directory{intranet_active_span}</a></li>
+                <li{timeclock_active}><a href="{base_url}timeclock">Timeclock{timeclock_active_span}</a></li>
 				<li{wol_active}><a href="{base_url}wol">Wake on Lan{wol_active_span}</a></li>
 			</ul>
 		</div><!-- /.navbar-collapse -->

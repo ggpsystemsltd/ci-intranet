@@ -75,6 +75,8 @@ class Holidays extends CI_Controller
 			'intranet_active_span' => '',
 			'machines_active' => '',
 			'machines_active_span' => '',
+			'timeclock_active' => '',
+			'timeclock_active_span' => '',
 			'wol_active' => '',
 			'wol_active_span' => '',
 		);
@@ -345,7 +347,7 @@ class Holidays extends CI_Controller
 		}
 
 		// Do stuff with the POSTed values. Send a confirmation email to the requesting user.
-		var_dump($t_request);
+		//var_dump($t_request); echo '<br />';
 		$this->send_confirmation_email( $t_request );
 		$t_uri = '/'. explode( '/', uri_string() )[0];
 		redirect( $t_uri );
@@ -362,6 +364,7 @@ class Holidays extends CI_Controller
 		if( $t_action != "cancel" ) {
 			$t_request = $this->Holiday_model->get_holiday( $t_request_id );
 			$t_holiday_data = array(
+				'id' => null, // @kludge
 				'email' => $this->Staff_model->get_email_by_id( $t_request[ 'staff_id' ]),
 				'staff_id' => $t_request[ 'staff_id' ],
 				'start' => $t_request[ 'start' ],

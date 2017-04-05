@@ -31,6 +31,22 @@ class Staff_model extends CI_Model
 		return $t_return;
 	}
 
+	public function get_staff_list_id()
+	{
+		$t_return = array();
+		$this->db->select( 'staff_id, name' );
+		$this->db->where( 'active', 1 );
+		$this->db->where( 'work_state !=', 'NaN');
+		$this->db->order_by( 'firstname' );
+		$query = $this->db->get( 'staff' );
+		if( $query->num_rows() > 0 ) {
+			foreach( $query->result_array() as $row ) {
+				$t_return[ $row[ 'staff_id' ]] =  $row[ 'name' ];
+			}
+		}
+		return $t_return;
+	}
+
 	public function get_email_by_id( $p_id )
 	{
 		$this->db->select( 'firstname, surname' );
