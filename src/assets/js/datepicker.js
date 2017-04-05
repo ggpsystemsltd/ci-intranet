@@ -1,3 +1,8 @@
-/**
- * Created by murray.crane on 03/04/2017.
- */
+/* jQUERY UI CALENDAR PLUGIN */
+// bind the Datepicker to the date-picker class
+
+$(document).ready(function() {
+    $( '.date-picker' ).datepicker( {
+        dateFormat: 'yy-mm-dd'
+    });
+});
