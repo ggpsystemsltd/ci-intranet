@@ -555,10 +555,10 @@ class Holidays extends CI_Controller
 			$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p>The following holiday request has been made in your name: <strong>'. $p_holiday[ 'holiday_type' ] . '</strong> on <strong>';
 			switch( $p_holiday[ 'holiday_type' ] ) {
 				case "Multiple Days":
-					$t_email_config[ 'message' ] .= explode( ' ', $p_holiday[ 'start' ] )[0] . ' to ' . explode( ' ', $p_holiday[ 'end' ] )[0];
+					$t_email_config[ 'message' ] .= $this->ISO_to_UK( $p_holiday[ 'start' ]) . ' to ' . $this->ISO_to_UK( $p_holiday[ 'end' ]);
 					break;
 				default:
-					$t_email_config[ 'message' ] .= explode( ' ', $p_holiday[ 'start' ] )[0];
+					$t_email_config[ 'message' ] .= $this->ISO_to_UK( $p_holiday[ 'start' ]);
 					break;
 			}
 			$t_email_config[ 'message' ] .= '</strong>.</p>' . PHP_EOL . '<p>To confirm the request, please click on the following link:</p>
@@ -574,35 +574,35 @@ class Holidays extends CI_Controller
 		}
 	}
 
-	private function send_approval_email( $p_holiday_request )
+	private function send_approval_email( $p_holiday )
 	{
 		$this->load->model( array( 'Nonce_model', 'Staff_model' ));
 
-		if( !empty( $p_holiday_request )) {
+		if( !empty( $p_holiday )) {
 			$t_controller_url = site_url() . explode( '/', uri_string() )[0] . '/approve_holiday_request';
 
-			$t_serialized = serialize( $p_holiday_request );
-			$t_nonce = $this->Nonce_model->get_crc32( $p_holiday_request [ 'holiday_id' ], $t_serialized, true );
+			$t_serialized = serialize( $p_holiday );
+			$t_nonce = $this->Nonce_model->get_crc32( $p_holiday [ 'holiday_id' ], $t_serialized, true );
 
-			$t_approve_url = $t_controller_url . '/approve/' . $p_holiday_request[ 'holiday_id' ] . '-' . $t_nonce;
-			$t_deny_url = $t_controller_url . '/deny/' . $p_holiday_request[ 'holiday_id' ] . '-' . $t_nonce;
+			$t_approve_url = $t_controller_url . '/approve/' . $p_holiday[ 'holiday_id' ] . '-' . $t_nonce;
+			$t_deny_url = $t_controller_url . '/deny/' . $p_holiday[ 'holiday_id' ] . '-' . $t_nonce;
 
-			$t_user = $this->Staff_model->get_name_by_id( $p_holiday_request[ 'staff_id' ]);
-			switch( $p_holiday_request[ 'holiday_type' ] ) {
+			$t_user = $this->Staff_model->get_name_by_id( $p_holiday[ 'staff_id' ]);
+			switch( $p_holiday[ 'holiday_type' ] ) {
 				case "Multiple Days":
-					$t_date = explode( ' ', $p_holiday_request[ 'start' ] )[0] . " to " . explode( ' ', $p_holiday_request[ 'end' ] )[0];
+					$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->ISO_to_UK( $p_holiday[ 'end' ]);
 					break;
 				default:
-					$t_date = explode( ' ', $p_holiday_request[ 'start' ] )[0];
+					$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]);
 					break;
 			}
 
 			// Create the email configuration
 			$t_email_config[ 'to' ] = 'holidays@ggpsystems.co.uk';
 			$t_email_config[ 'subject' ] = 'Holiday request';
-			$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong> has requested a <strong>' . $p_holiday_request[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong>.</p>';
-			if( !empty( $p_holiday_request[ 'note' ] )) {
-				$t_email_config[ 'message' ] .= '<p>They included the following note with the request: <em>"' . $p_holiday_request[ 'note' ] . '"</em>.</p>';
+			$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong> has requested a <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong>.</p>';
+			if( !empty( $p_holiday[ 'note' ] )) {
+				$t_email_config[ 'message' ] .= '<p>They included the following note with the request: <em>"' . $p_holiday[ 'note' ] . '"</em>.</p>';
 			}
 			$t_email_config[ 'message' ] .= '<p>To approve the request, please click on the following link:</p>
 <a href="' . $t_approve_url . '">' . $t_approve_url . '</a>
@@ -623,10 +623,10 @@ class Holidays extends CI_Controller
 
 		switch( $p_holiday[ 'holiday_type' ] ) {
 			case "Multiple Days":
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0] . " to " . explode( ' ', $p_holiday[ 'end' ] )[0];
+				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->ISO_to_UK( $p_holiday[ 'end' ]);
 				break;
 			default:
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0];
+				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]);
 				break;
 		}
 
@@ -651,10 +651,10 @@ class Holidays extends CI_Controller
 
 		switch( $p_holiday[ 'holiday_type' ] ) {
 			case "Multiple Days":
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0] . " to " . explode( ' ', $p_holiday[ 'end' ] )[0];
+				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->ISO_to_UK( $p_holiday[ 'end' ]);
 				break;
 			default:
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0];
+				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]);
 				break;
 		}
 
@@ -679,10 +679,10 @@ class Holidays extends CI_Controller
 
 		switch( $p_holiday[ 'holiday_type' ] ) {
 			case "Multiple Days":
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0] . " to " . explode( ' ', $p_holiday[ 'end' ] )[0];
+				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . explode( ' ', $p_holiday[ 'end' ] )[0];
 				break;
 			default:
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0];
+				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]);
 				break;
 		}
 
@@ -735,6 +735,12 @@ class Holidays extends CI_Controller
 		if( !$t_mail->send()) {
 			echo "Mailer Error: " . $t_mail->ErrorInfo;
 		}
+	}
+
+	private function ISO_to_UK( $p_date )
+	{
+		$t_date = new DateTime( $p_date );
+		return $t_date->format('d-m-Y');
 	}
 
 	public function set()
