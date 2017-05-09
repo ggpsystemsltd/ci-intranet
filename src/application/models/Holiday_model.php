@@ -50,9 +50,9 @@ class Holiday_model  extends CI_Model
 		$t_now = new DateTime();
 		$this->db->select( 'holidays.holiday_id, staff.name, holidays.start, holidays.end, holidays.confirmed, holidays.approved' );
 		$this->db->join( 'staff', 'holidays.staff_id=staff.staff_id');
-		$this->db->where( '`start` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ' . $p_interval . ')' );
-		$this->db->or_where( '`end` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ' . $p_interval . ')' );
-		$this->db->or_where( 'CURDATE() BETWEEN `start` AND `end`' );
+		$this->db->where( '`start` BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ' . $p_interval . ')' );
+		$this->db->or_where( '`end` BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ' . $p_interval . ')' );
+		$this->db->or_where( 'NOW() BETWEEN `start` AND `end`' );
 		$this->db->order_by( 'holidays.start');
 		$query = $this->db->get( 'holidays' );
 		if( $query->num_rows() > 0 ) {
