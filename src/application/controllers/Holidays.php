@@ -100,7 +100,7 @@ class Holidays extends CI_Controller
 			);
 		} else {
 			foreach( $t_holidays as $t_holiday ) {
-				$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
+					$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 					0 => array( 'class' => '', 'value' => $t_holiday[ 'name' ]),
 					1 => array( 'class' => 'class="' . $t_holiday[ 'class' ] . '"', 'value' => $t_holiday[ 'dates' ]),
 					2 => array( 'class' => '', 'value' => '<button type="button" data-toggle="tooltip" id="edit-btn-' . $t_holiday[ 'id' ] .
@@ -555,10 +555,10 @@ class Holidays extends CI_Controller
 			$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p>The following holiday request has been made in your name: <strong>'. $p_holiday[ 'holiday_type' ] . '</strong> on <strong>';
 			switch( $p_holiday[ 'holiday_type' ] ) {
 				case "Multiple Days":
-					$t_email_config[ 'message' ] .= $this->ISO_to_UK( $p_holiday[ 'start' ]) . ' to ' . $this->ISO_to_UK( $p_holiday[ 'end' ]);
+					$t_email_config[ 'message' ] .= $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . ' to ' . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 					break;
 				default:
-					$t_email_config[ 'message' ] .= $this->ISO_to_UK( $p_holiday[ 'start' ]);
+					$t_email_config[ 'message' ] .= $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 					break;
 			}
 			$t_email_config[ 'message' ] .= '</strong>.</p>' . PHP_EOL . '<p>To confirm the request, please click on the following link:</p>
@@ -590,10 +590,10 @@ class Holidays extends CI_Controller
 			$t_user = $this->Staff_model->get_name_by_id( $p_holiday[ 'staff_id' ]);
 			switch( $p_holiday[ 'holiday_type' ] ) {
 				case "Multiple Days":
-					$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->ISO_to_UK( $p_holiday[ 'end' ]);
+					$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 					break;
 				default:
-					$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]);
+					$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 					break;
 			}
 
@@ -623,10 +623,10 @@ class Holidays extends CI_Controller
 
 		switch( $p_holiday[ 'holiday_type' ] ) {
 			case "Multiple Days":
-				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->ISO_to_UK( $p_holiday[ 'end' ]);
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 				break;
 			default:
-				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]);
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 				break;
 		}
 
@@ -651,10 +651,10 @@ class Holidays extends CI_Controller
 
 		switch( $p_holiday[ 'holiday_type' ] ) {
 			case "Multiple Days":
-				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->ISO_to_UK( $p_holiday[ 'end' ]);
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 				break;
 			default:
-				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]);
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 				break;
 		}
 
@@ -679,10 +679,10 @@ class Holidays extends CI_Controller
 
 		switch( $p_holiday[ 'holiday_type' ] ) {
 			case "Multiple Days":
-				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . explode( ' ', $p_holiday[ 'end' ] )[0];
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 				break;
 			default:
-				$t_date = $this->ISO_to_UK( $p_holiday[ 'start' ]);
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 				break;
 		}
 
@@ -737,27 +737,6 @@ class Holidays extends CI_Controller
 		}
 	}
 
-	private function ISO_to_UK( $p_date )
-	{
-		$t_date = new DateTime( $p_date );
-		return $t_date->format('d-m-Y');
-	}
-
-	public function set()
-	{
-		$this->load->library( 'grocery_CRUD' );
-
-		$this->grocery_crud->set_theme( 'bootstrap' );
-
-		$this->grocery_crud->set_table( 'holidays' );
-		$this->grocery_crud->set_subject( 'Vacations' );
-		$this->grocery_crud->fields( 'staff_id', 'start', 'end', 'holiday_type', 'note', 'confirmed', 'approved' );
-		$this->grocery_crud->field_type( 'holiday_type', 'enum', array( 'Half Day (AM)', 'Half Day (PM)', 'Single Day', 'Multiple Days' ));
-		$this->grocery_crud->set_relation( 'staff_id', 'staff', 'name' );
-
-		$output = $this->grocery_crud->render();
-		$this->crud_output( $output );
-	}
 
 	private function crud_output( $output = null )
 	{
