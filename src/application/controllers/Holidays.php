@@ -287,7 +287,6 @@ class Holidays extends CI_Controller
 	{
 		$this->load->model( array( 'Staff_model' ));
 
-		// @todo Handle edited requests as well as new - holiday_id will be set.
 		// Possible post values: user (email address), start_date/end_date (date), start_type/end_type (am/pm/full), note (text)
 		$t_request = array();
 		$t_request[ 'id' ] = $this->input->post( 'holiday_id', false );
@@ -599,7 +598,7 @@ class Holidays extends CI_Controller
 
 			// Create the email configuration
 			$t_email_config[ 'to' ] = 'holidays@ggpsystems.co.uk';
-			$t_email_config[ 'subject' ] = 'Holiday request';
+			$t_email_config[ 'subject' ] = $p_holiday[ 'holiday_type' ] . ' holiday request for ' . $t_user . ' on ' . $t_date;
 			$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong> has requested a <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong>.</p>';
 			if( !empty( $p_holiday[ 'note' ] )) {
 				$t_email_config[ 'message' ] .= '<p>They included the following note with the request: <em>"' . $p_holiday[ 'note' ] . '"</em>.</p>';
@@ -737,6 +736,21 @@ class Holidays extends CI_Controller
 		}
 	}
 
+	public function set()
+	{
+		$this->load->library( 'grocery_CRUD' );
+
+		$this->grocery_crud->set_theme( 'bootstrap' );
+
+		$this->grocery_crud->set_table( 'holidays' );
+		$this->grocery_crud->set_subject( 'Vacations' );
+		$this->grocery_crud->fields( 'staff_id', 'start', 'end', 'holiday_type', 'note', 'confirmed', 'approved' );
+		$this->grocery_crud->field_type( 'holiday_type', 'enum', array( 'Half Day (AM)', 'Half Day (PM)', 'Single Day', 'Multiple Days' ));
+		$this->grocery_crud->set_relation( 'staff_id', 'staff', 'name', 'active = true AND work_state != "NaN"' );
+
+		$output = $this->grocery_crud->render();
+		$this->crud_output( $output );
+	}
 
 	private function crud_output( $output = null )
 	{

@@ -85,7 +85,7 @@ class Timeclock_model extends CI_Model
 		$this->db->join( 'staff', 'touch_times.staff_id=staff.staff_id' );
 		$this->db->where( '`touch_id` IN (SELECT MAX(`touch_id`) FROM `touch_times` GROUP BY `staff_id`)' );
 		$query = $this->db->get( 'touch_times' );
-		//@todo debug var_dump($this->db->last_query()); echo "<br/>";
+		//var_dump($this->db->last_query()); echo "<br/>";
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {
 				$t_class = 'success';

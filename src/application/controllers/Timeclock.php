@@ -204,7 +204,6 @@ class Timeclock extends CI_Controller
 
 		$t_yesterday = date( 'Y-m-d', strtotime( 'last weekday' ));
 
-		// @todo Handle $POST/$SESSION values here: user "name", report period start, report period end
 		// Default to logged in user and yesterday
 		if( $this->input->post( 'name', true )) {
 			$t_user = $this->input->post( 'name', true );
@@ -378,7 +377,7 @@ class Timeclock extends CI_Controller
 			</form>
 		</div>' . PHP_EOL;
 		$t_form_data[ 'variable_post' ] = '';
-		//@todo debug var_dump($this->session->userdata()); echo "<br/>";
+		//var_dump($this->session->userdata()); echo "<br/>";
 
 		$this->parser->parse( 'header', $t_page_data );
 		$this->parser->parse( 'navbar', $t_nav_data );
@@ -400,7 +399,7 @@ class Timeclock extends CI_Controller
 		$this->grocery_crud->set_subject( 'Timeclock' );
 		$this->grocery_crud->fields( 'staff_id', 'in_out', 'time_stamp', 'notes', 'ip_address' );
 		$this->grocery_crud->field_type( 'in_out', 'enum', array( 'in', 'out' ));
-		$this->grocery_crud->set_relation( 'staff_id', 'staff', 'name', array( 'active' => '1' ));
+		$this->grocery_crud->set_relation( 'staff_id', 'staff', 'name', 'active = true AND work_state != "NaN"' );
 
 		$output = $this->grocery_crud->render();
 		$this->crud_output( $output );
