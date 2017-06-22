@@ -314,8 +314,7 @@ class Timeclock extends CI_Controller
 		$this->parser->parse( 'heading', $t_page_data );
 
 		// Table data
-		//$t_timeclock_data = $this->Timeclock_model->get_data( $t_user, $t_period_start, $t_period_end );
-		$t_timeclock_data = $this->Timeclock_model->get_data( null, "2017-06-16 00:00:00", "2017-06-19 23:59:59" );
+		$t_timeclock_data = $this->Timeclock_model->get_data( $t_user, $t_period_start, $t_period_end );
 		//var_dump($t_timeclock_data['rows']); echo "<br/>";
 
 		if( !empty( $t_timeclock_data )) {
