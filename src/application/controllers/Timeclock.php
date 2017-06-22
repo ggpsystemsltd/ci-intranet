@@ -272,76 +272,6 @@ class Timeclock extends CI_Controller
 			'wol_active_span' => '',
 		);
 
-		// Table data
-		// How to handle the name for All Staff?
-		$t_timeclock_data = $this->Timeclock_model->get_data( $t_user, $t_period_start, $t_period_end );
-		//@debug var_dump($t_timeclock_data); echo "<br/>";
-		$t_table_data[ 'title' ] = '';
-		$t_table_data[ 'class' ] = 'col-md-4';
-
-		if( !is_null( $t_user )) {
-			$t_table_data[ 'head' ] = array(
-				0 => array( 'column' => 'In/Out' ),
-				1 => array( 'column' => 'Time and Date' ),
-				2 => array( 'column' => 'Note' ),
-			);
-			if( empty( $t_timeclock_data )) {
-				$t_table_data[ 'row' ][] = array( 'class' => '', 'column' => array(
-					0 => array( 'class' => '', 'value' => '' ),
-					1 => array( 'class' => '', 'value' => '' ),
-					2 => array( 'class' => '', 'value' => '' ),
-				));
-			} else {
-				foreach ($t_timeclock_data[ 'rows' ] as $t_touch) {
-					$t_datetime = new DateTime( $t_touch[ 'time_stamp' ], new DateTimeZone('UTC'));
-					$t_datetime->setTimezone(new DateTimeZone('Europe/London'));
-					$t_table_data[ 'row' ][] = array( 'class' => 'class="' . $t_touch[ 'class' ] . '"', 'column' => array(
-						0 => array( 'class' => '', 'value' => $t_touch[ 'in_out' ] ),
-						1 => array( 'class' => '', 'value' => $t_datetime->format('H:i:s d/m/Y (T)' )),
-						2 => array( 'class' => '', 'value' => $t_touch[ 'note' ] ),
-					));
-				}
-				$t_table_data[ 'row' ][] = array( 'class' => 'class="info"', 'column' => array(
-					0 => array( 'class' => '', 'value' => '<strong>Total Worked</strong>'),
-					1 => array( 'class' => '', 'value' => ''),
-					2 => array( 'class' => '', 'value' => '<strong>'. $t_timeclock_data[ 'interval' ].'</strong>'),
-				));
-			}
-		} else {
-			$t_table_data[ 'head' ] = array(
-				0 => array( 'column' => 'Name' ),
-				1 => array( 'column' => 'In/Out' ),
-				2 => array( 'column' => 'Time and Date' ),
-				3 => array( 'column' => 'Note' ),
-			);
-			if( empty( $t_timeclock_data )) {
-				$t_table_data[ 'row' ][] = array( 'class' => '', 'column' => array(
-					0 => array( 'class' => '', 'value' => '' ),
-					1 => array( 'class' => '', 'value' => '' ),
-					2 => array( 'class' => '', 'value' => '' ),
-					3 => array( 'class' => '', 'value' => '' ),
-				));
-			} else {
-				foreach ($t_timeclock_data[ 'rows' ] as $t_touch) {
-					$t_datetime = new DateTime( $t_touch[ 'time_stamp' ], new DateTimeZone('UTC'));
-					$t_datetime->setTimezone(new DateTimeZone('Europe/London'));
-					$t_table_data[ 'row' ][] = array( 'class' => 'class="' . $t_touch[ 'class' ] . '"', 'column' => array(
-						0 => array( 'class' => '', 'value' => $t_touch[ 'name' ] ),
-						1 => array( 'class' => '', 'value' => $t_touch[ 'in_out' ] ),
-						2 => array( 'class' => '', 'value' => $t_datetime->format('H:i:s d/m/Y (T)' )),
-						3 => array( 'class' => '', 'value' => $t_touch[ 'note' ] ),
-					));
-				}
-				$t_table_data[ 'row' ][] = array( 'class' => 'class="info"', 'column' => array(
-					0 => array( 'class' => '', 'value' => '<strong>Total Worked</strong>'),
-					1 => array( 'class' => '', 'value' => ''),
-					2 => array( 'class' => '', 'value' => ''),
-					3 => array( 'class' => '', 'value' => '<strong>'. $t_timeclock_data[ 'interval' ].'</strong>'),
-				));
-			}
-			$t_table_data[ 'updated' ] = $this->Timeclock_model->last_updated();
-		}
-
 		// Form data
 		$t_users = $t_users = $this->Staff_model->get_staff_list_id();
 		$t_form_data[ 'variable' ] = '	<div id="legend" class="btn btn-default">Report parameters <span class="glyphicon glyphicon-menu-down"></span></div>
@@ -382,9 +312,97 @@ class Timeclock extends CI_Controller
 		$this->parser->parse( 'header', $t_page_data );
 		$this->parser->parse( 'navbar', $t_nav_data );
 		$this->parser->parse( 'heading', $t_page_data );
-		$this->parser->parse( 'row-start', array());
-		$this->parser->parse( 'table', $t_table_data );
-		$this->parser->parse( 'row-stop', array());
+
+		// Table data
+		//$t_timeclock_data = $this->Timeclock_model->get_data( $t_user, $t_period_start, $t_period_end );
+		$t_timeclock_data = $this->Timeclock_model->get_data( null, "2017-06-16 00:00:00", "2017-06-19 23:59:59" );
+		//var_dump($t_timeclock_data['rows']); echo "<br/>";
+
+		if( !empty( $t_timeclock_data )) {
+			$t_table_data[ 'class' ] = 'col-md-4';
+			$t_table_data[ 'title' ] = '';
+			$t_table_data[ 'head' ] = array(
+				0 => array( 'column' => 'In/Out' ),
+				1 => array( 'column' => 'Time and Date' ),
+				2 => array( 'column' => 'Note' ),
+			);
+
+			$t_row_date = "";
+
+			// @todo Handles multiple people simultaneously, now what about multiple days?
+			foreach ($t_timeclock_data[ 'rows' ] as $t_touch) {
+				$t_datetime = new DateTime( $t_touch[ 'time_stamp' ], new DateTimeZone('UTC'));
+				$t_datetime->setTimezone(new DateTimeZone('Europe/London'));
+
+				// Multi-day handling
+				if( empty( $t_row_date )) {
+					$t_interval = new DateTime( "00:00:00" );
+					$f = clone $t_interval;
+				} elseif( $t_datetime->format('d/m/Y' ) != $t_row_date ) {
+					$t_table_data[ 'row' ][] = array( 'class' => 'class="info"', 'column' => array(
+						0 => array( 'class' => '', 'value' => '<strong>Total Worked</strong>'),
+						1 => array( 'class' => '', 'value' => ''),
+						2 => array( 'class' => '', 'value' => '<strong>'. $t_interval->diff( $f, true )->format("%H h %I m %S s").'</strong>'),
+					));
+
+					$this->parser->parse( 'row-start', array());
+					$this->parser->parse( 'table', $t_table_data );
+					$this->parser->parse( 'row-stop', array());
+
+					$t_interval = new DateTime( "00:00:00" );
+					$f = clone $t_interval;
+					unset( $t_table_data[ 'row' ]);
+				}
+
+				// Multi-user handling
+				if( isset( $t_touch[ 'name' ])) {
+					if( empty( $t_table_data[ 'title' ] )) {
+						// First time through, no user name yet
+						$t_table_data[ 'title' ] = $t_touch[ 'name' ];
+					} elseif( $t_touch[ 'name' ] != $t_table_data[ 'title' ] ) {
+						// Change of user name
+						$t_table_data[ 'row' ][] = array( 'class' => 'class="info"', 'column' => array(
+							0 => array( 'class' => '', 'value' => '<strong>Total Worked</strong>'),
+							1 => array( 'class' => '', 'value' => ''),
+							2 => array( 'class' => '', 'value' => '<strong>'. $t_interval->diff( $f, true )->format("%H h %I m %S s").'</strong>'),
+						));
+
+						$this->parser->parse( 'row-start', array());
+						$this->parser->parse( 'table', $t_table_data );
+						$this->parser->parse( 'row-stop', array());
+
+						$t_table_data[ 'title' ] = $t_touch[ 'name' ];
+						$t_interval = new DateTime( "00:00:00" );
+						$f = clone $t_interval;
+						unset( $t_table_data[ 'row' ]);
+					}
+				}
+
+				$t_row_date = $t_datetime->format( 'd/m/Y' );
+
+				$t_table_data[ 'row' ][] = array( 'class' => 'class="' . $t_touch[ 'class' ] . '"', 'column' => array(
+					0 => array( 'class' => '', 'value' => $t_touch[ 'in_out' ] ),
+					1 => array( 'class' => '', 'value' => $t_datetime->format('H:i:s d/m/Y (T)' )),
+					2 => array( 'class' => '', 'value' => $t_touch[ 'note' ] ),
+				));
+				if( $t_touch[ 'in_out' ] == 'in' ) {
+					$t_in = new DateTime( $t_touch[ 'time_stamp' ]);
+				} else {
+					$t_out = new DateTime( $t_touch[ 'time_stamp' ]);
+					$t_interval->add( $t_out->diff(  $t_in, true ));
+				}
+			}
+			$t_table_data[ 'row' ][] = array( 'class' => 'class="info"', 'column' => array(
+				0 => array( 'class' => '', 'value' => '<strong>Total Worked</strong>'),
+				1 => array( 'class' => '', 'value' => ''),
+				2 => array( 'class' => '', 'value' => '<strong>'. $t_interval->diff( $f, true )->format("%H h %I m %S s").'</strong>'),
+			));
+
+			$this->parser->parse( 'row-start', array());
+			$this->parser->parse( 'table', $t_table_data );
+			$this->parser->parse( 'row-stop', array());
+		}
+
 		$this->parser->parse( 'form', $t_form_data );
 		$this->parser->parse( 'footer', $t_page_data );
 	}

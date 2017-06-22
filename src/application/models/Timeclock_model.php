@@ -30,24 +30,19 @@ class Timeclock_model extends CI_Model
 			$this->db->select( 'in_out, time_stamp, notes' );
 			$this->db->where( 'staff_id', $p_user );
 		} else {
-			$this->db->select( 'staff.firstname AS name, in_out, time_stamp, notes' );
+			$this->db->select( 'CONCAT(staff.firstname, " ", staff.surname) AS name, in_out, time_stamp, notes' );
 			$this->db->join( 'staff', 'touch_times.staff_id=staff.staff_id');
+			$this->db->order_by( 'name, time_stamp' );
 		}
 		$this->db->where( 'time_stamp BETWEEN "' . $p_period_start . '" AND "' . $p_period_end . '"' );
 		$query = $this->db->get( 'touch_times' );
-		var_dump($this->db->last_query()); echo "<br/>";
-		$t_interval = new DateTime( "00:00:00" );
+		//var_dump($this->db->last_query()); echo "<br/>";
 		if( $query->num_rows() > 0 ) {
-			$f = clone $t_interval;
 			$r = array();
 			foreach( $query->result_array() as $row ) {
 				$t_class = 'success';
 				if( $row[ 'in_out' ] == 'out' ) {
 					$t_class = 'danger';
-					$t_out = new DateTime( $row[ 'time_stamp' ]);
-					$t_interval->add( $t_out->diff( $t_in, true ));
-				} else {
-					$t_in = new DateTime( $row[ 'time_stamp' ]);
 				}
 				if( !is_null( $p_user )) {
 					$r[] = array(
@@ -66,8 +61,7 @@ class Timeclock_model extends CI_Model
 					);
 				}
 			}
-			$t_return = array_merge( array( "rows" => $r ),
-				array( "interval" => $t_interval->diff( $f, true )->format( "%H h %I m %S s" )));
+			$t_return = array( "rows" => $r );
 		}
 
 		return $t_return;

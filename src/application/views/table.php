@@ -1,5 +1,5 @@
 	<div class="{class}">
-        {title}
+        <h1><small>{title}</small></h1>
 		<div class="table-responsive">
 			<table class="table table-striped">
 				<thead>
