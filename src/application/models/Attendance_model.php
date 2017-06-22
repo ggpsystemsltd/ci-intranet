@@ -27,7 +27,7 @@ class Attendance_model extends CI_Model
 	function get_attendance()
 	{
 		$t_return = array();
-		$this->db->select( 'name, work_state' );
+		$this->db->select( 'staff_id, name, work_state' );
 		$this->db->where( 'active', 1 );
 		$this->db->where( 'work_state !=', 'NaN');
 		$this->db->order_by( 'firstname' );
@@ -35,6 +35,7 @@ class Attendance_model extends CI_Model
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {
 				$t_return[] = array(
+					'id' => $row[ 'staff_id' ],
 					'name' => $row[ 'name' ],
 					'class' => preg_replace('/\s/', '-', strtolower($row[ 'work_state' ])),
 					'attendance' => $row[ 'work_state' ],

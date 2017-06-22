@@ -10,8 +10,7 @@ services:
     volumes:
       - ./docker/nginx/default:/etc/nginx/sites-available/default
       - ./docker/nginx/default:/etc/nginx/sites-enabled/default
-      - ./docker/logs/nginx-access.log:/var/log/nginx/access.log
-      - ./docker/logs/nginx-error.log:/var/log/nginx/error.log
+      - ./docker/logs/:/var/log/nginx/
       - ./src/assets:/usr/share/nginx/html/assets
 
   phpfpm:

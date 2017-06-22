@@ -51,6 +51,8 @@ class Machines extends CI_Controller {
 			'intranet_active_span' => '',
 			'machines_active' => ' class="active"',
 			'machines_active_span' => '<span class="sr-only">(current)</span>',
+			'timeclock_active' => '',
+			'timeclock_active_span' => '',
 			'wol_active' => '',
 			'wol_active_span' => '',
 		);

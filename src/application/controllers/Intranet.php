@@ -92,6 +92,8 @@ class Intranet extends CI_Controller {
 			'intranet_active_span' => '<span class="sr-only">(current)</span>',
 			'machines_active' => '',
 			'machines_active_span' => '',
+			'timeclock_active' => '',
+			'timeclock_active_span' => '',
 			'wol_active' => '',
 			'wol_active_span' => '',
 		);
@@ -109,7 +111,11 @@ class Intranet extends CI_Controller {
 			$t_name = $t_telephone[ 'name' ];
 			$t_attendance = $this->Attendance_model->get_attendance_by_id( $t_telephone[ 'staff_id' ] );
 			if( $t_attendance != "NaN" ) {
-				$t_name .= " <em>$t_attendance</em>";
+				if( $this->Holiday_model->is_on_holiday( $t_telephone[ 'staff_id' ])) {
+					$t_name .= " <em>Vacation</em>";
+				} else {
+					$t_name .= " <em>$t_attendance</em>";
+				}
 			}
 			$t_table_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 				0 => array( 'class' => '', 'value' => $t_telephone[ 'extn' ]),
@@ -121,7 +127,7 @@ class Intranet extends CI_Controller {
 
 		// Vacations table - $t_holidays will be empty if no holidays
 		$t_display_holidays = true;
-		$t_holidays = $this->Holiday_model->get_holidays_this_week();
+		$t_holidays = $this->Holiday_model->get_holidays( "1 week" );
 		if( !empty( $t_holidays )) {
 			$t_holidays_data[ 'class' ] = 'col-md-3 hidden-print';
 			$t_holidays_data[ 'title' ] = '<h2>Current/upcoming holidays</h2>' . PHP_EOL;

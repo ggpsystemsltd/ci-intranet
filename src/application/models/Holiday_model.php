@@ -47,11 +47,13 @@ class Holiday_model  extends CI_Model
 	public function get_holidays( $p_interval = "1 week" )
 	{
 		$return = array();
+		$t_now = new DateTime();
 		$this->db->select( 'holidays.holiday_id, staff.name, holidays.start, holidays.end, holidays.confirmed, holidays.approved' );
 		$this->db->join( 'staff', 'holidays.staff_id=staff.staff_id');
-		$this->db->where( '`start` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ' . $p_interval . ')' );
-		$this->db->or_where( '`end` BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ' . $p_interval . ')' );
-		$this->db->or_where( 'CURDATE() BETWEEN `start` AND `end`' );
+		$this->db->where( '`start` BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ' . $p_interval . ')' );
+		$this->db->or_where( '`end` BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ' . $p_interval . ')' );
+		$this->db->or_where( 'NOW() BETWEEN `start` AND `end`' );
+		$this->db->order_by( 'holidays.start');
 		$query = $this->db->get( 'holidays' );
 		if( $query->num_rows() > 0 ) {
 			foreach( $query->result_array() as $row ) {
@@ -61,11 +63,22 @@ class Holiday_model  extends CI_Model
 				} elseif( $row[ 'approved' ] == 0 ) {
 					$t_class = 'warning';
 				}
+				$t_start = new DateTime( $row[ 'start' ]);
+				$t_end = new DateTime( $row[ 'end' ]);
+				if( $t_now->getTimestamp() > $t_start->getTimestamp() &&
+					$t_now->getTimestamp() < $t_end->getTimestamp() &&
+					$t_class == 'success' ) {
+					$t_name = '<strong>' . $row[ 'name' ] . '</strong>';
+					$t_dates = '<strong>' . $row[ 'start' ] . " to " . $row[ 'end' ] . '</strong>';
+				} else {
+					$t_name = $row[ 'name' ];
+					$t_dates = $row[ 'start' ] . " to " . $row[ 'end' ];
+				}
 				$return[] = array(
 					'class' => $t_class,
 					'id' => $row[ 'holiday_id' ],
-					'name' => $row[ 'name' ],
-					'dates' => $row[ 'start' ] . " to " . $row[ 'end' ],
+					'name' => $t_name,
+					'dates' => $t_dates,
 				);
 			}
 		} else {
@@ -73,6 +86,22 @@ class Holiday_model  extends CI_Model
 		}
 		return $return;
 	}
+
+	public function is_on_holiday( $p_staff_id )
+	{
+		$this->db->select( 'holidays.start, holidays.end' );
+		$this->db->where( 'holidays.staff_id = ' . $p_staff_id );
+		$this->db->where( 'holidays.confirmed = 1' );
+		$this->db->where( 'holidays.approved = 1' );
+		$this->db->where( 'NOW() BETWEEN `start` AND `end`' );
+		$query = $this->db->get( 'holidays' );
+		if( $query->num_rows() > 0 ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/**
 	 * get_staff_holidays - get the staff_ids of all staff currently on holiday
 	 *
@@ -141,6 +170,12 @@ class Holiday_model  extends CI_Model
 	{
 		$this->db->where( 'holiday_id', $p_id );
 		$this->db->delete( 'holidays' );
+	}
+
+	public function ISO_to_UK( $p_date )
+	{
+		$t_date = new DateTime( $p_date );
+		return $t_date->format('d-m-Y');
 	}
 }
 

@@ -87,6 +87,8 @@ class Attendance extends CI_Controller {
 			'intranet_active_span' => '',
 			'machines_active' => '',
 			'machines_active_span' => '',
+			'timeclock_active' => '',
+			'timeclock_active_span' => '',
 			'wol_active' => '',
 			'wol_active_span' => '',
 		);
@@ -100,6 +102,10 @@ class Attendance extends CI_Controller {
 		);
 		$t_attendance = $this->Attendance_model->get_attendance();
 		foreach( $t_attendance as $t_staff ) {
+			if( $this->Holiday_model->is_on_holiday( $t_staff[ 'id' ])) {
+				$t_staff[ 'class' ] = 'vacation';
+				$t_staff[ 'attendance' ] = 'Vacation';
+			}
 			if( $t_staff[ 'class' ] == 'on-site' ) {
 				$t_attendance_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 					0 => array( 'class' => '', 'value' => $t_staff[ 'name' ]),
@@ -117,7 +123,7 @@ class Attendance extends CI_Controller {
 
 		// Vacations table - array will be empty if no holidays
 		$t_display_holidays = true;
-		$t_holidays = $this->Holiday_model->get_holidays_this_week();
+		$t_holidays = $this->Holiday_model->get_holidays();
 		if( !empty( $t_holidays )) {
 			$t_holidays_data[ 'class' ] = 'col-md-6 hidden-print';
 			$t_holidays_data[ 'title' ] = '<h2>Current/upcoming holidays</h2>' . PHP_EOL;

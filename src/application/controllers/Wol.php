@@ -73,6 +73,8 @@ class Wol extends CI_Controller
 			'intranet_active_span' => '',
 			'machines_active' => '',
 			'machines_active_span' => '',
+			'timeclock_active' => '',
+			'timeclock_active_span' => '',
 			'wol_active' => ' class="active"',
 			'wol_active_span' => '<span class="sr-only">(current)</span>',
 		);

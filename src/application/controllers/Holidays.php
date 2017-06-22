@@ -75,6 +75,8 @@ class Holidays extends CI_Controller
 			'intranet_active_span' => '',
 			'machines_active' => '',
 			'machines_active_span' => '',
+			'timeclock_active' => '',
+			'timeclock_active_span' => '',
 			'wol_active' => '',
 			'wol_active_span' => '',
 		);
@@ -98,7 +100,7 @@ class Holidays extends CI_Controller
 			);
 		} else {
 			foreach( $t_holidays as $t_holiday ) {
-				$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
+					$t_holidays_data[ 'row' ][] = array( 'class' => '', 'column' => array(
 					0 => array( 'class' => '', 'value' => $t_holiday[ 'name' ]),
 					1 => array( 'class' => 'class="' . $t_holiday[ 'class' ] . '"', 'value' => $t_holiday[ 'dates' ]),
 					2 => array( 'class' => '', 'value' => '<button type="button" data-toggle="tooltip" id="edit-btn-' . $t_holiday[ 'id' ] .
@@ -285,7 +287,6 @@ class Holidays extends CI_Controller
 	{
 		$this->load->model( array( 'Staff_model' ));
 
-		// @todo Handle edited requests as well as new - holiday_id will be set.
 		// Possible post values: user (email address), start_date/end_date (date), start_type/end_type (am/pm/full), note (text)
 		$t_request = array();
 		$t_request[ 'id' ] = $this->input->post( 'holiday_id', false );
@@ -345,7 +346,7 @@ class Holidays extends CI_Controller
 		}
 
 		// Do stuff with the POSTed values. Send a confirmation email to the requesting user.
-		var_dump($t_request);
+		//var_dump($t_request); echo '<br />';
 		$this->send_confirmation_email( $t_request );
 		$t_uri = '/'. explode( '/', uri_string() )[0];
 		redirect( $t_uri );
@@ -362,6 +363,7 @@ class Holidays extends CI_Controller
 		if( $t_action != "cancel" ) {
 			$t_request = $this->Holiday_model->get_holiday( $t_request_id );
 			$t_holiday_data = array(
+				'id' => null, // @kludge
 				'email' => $this->Staff_model->get_email_by_id( $t_request[ 'staff_id' ]),
 				'staff_id' => $t_request[ 'staff_id' ],
 				'start' => $t_request[ 'start' ],
@@ -552,10 +554,10 @@ class Holidays extends CI_Controller
 			$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p>The following holiday request has been made in your name: <strong>'. $p_holiday[ 'holiday_type' ] . '</strong> on <strong>';
 			switch( $p_holiday[ 'holiday_type' ] ) {
 				case "Multiple Days":
-					$t_email_config[ 'message' ] .= explode( ' ', $p_holiday[ 'start' ] )[0] . ' to ' . explode( ' ', $p_holiday[ 'end' ] )[0];
+					$t_email_config[ 'message' ] .= $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . ' to ' . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 					break;
 				default:
-					$t_email_config[ 'message' ] .= explode( ' ', $p_holiday[ 'start' ] )[0];
+					$t_email_config[ 'message' ] .= $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 					break;
 			}
 			$t_email_config[ 'message' ] .= '</strong>.</p>' . PHP_EOL . '<p>To confirm the request, please click on the following link:</p>
@@ -571,35 +573,35 @@ class Holidays extends CI_Controller
 		}
 	}
 
-	private function send_approval_email( $p_holiday_request )
+	private function send_approval_email( $p_holiday )
 	{
 		$this->load->model( array( 'Nonce_model', 'Staff_model' ));
 
-		if( !empty( $p_holiday_request )) {
+		if( !empty( $p_holiday )) {
 			$t_controller_url = site_url() . explode( '/', uri_string() )[0] . '/approve_holiday_request';
 
-			$t_serialized = serialize( $p_holiday_request );
-			$t_nonce = $this->Nonce_model->get_crc32( $p_holiday_request [ 'holiday_id' ], $t_serialized, true );
+			$t_serialized = serialize( $p_holiday );
+			$t_nonce = $this->Nonce_model->get_crc32( $p_holiday [ 'holiday_id' ], $t_serialized, true );
 
-			$t_approve_url = $t_controller_url . '/approve/' . $p_holiday_request[ 'holiday_id' ] . '-' . $t_nonce;
-			$t_deny_url = $t_controller_url . '/deny/' . $p_holiday_request[ 'holiday_id' ] . '-' . $t_nonce;
+			$t_approve_url = $t_controller_url . '/approve/' . $p_holiday[ 'holiday_id' ] . '-' . $t_nonce;
+			$t_deny_url = $t_controller_url . '/deny/' . $p_holiday[ 'holiday_id' ] . '-' . $t_nonce;
 
-			$t_user = $this->Staff_model->get_name_by_id( $p_holiday_request[ 'staff_id' ]);
-			switch( $p_holiday_request[ 'holiday_type' ] ) {
+			$t_user = $this->Staff_model->get_name_by_id( $p_holiday[ 'staff_id' ]);
+			switch( $p_holiday[ 'holiday_type' ] ) {
 				case "Multiple Days":
-					$t_date = explode( ' ', $p_holiday_request[ 'start' ] )[0] . " to " . explode( ' ', $p_holiday_request[ 'end' ] )[0];
+					$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 					break;
 				default:
-					$t_date = explode( ' ', $p_holiday_request[ 'start' ] )[0];
+					$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 					break;
 			}
 
 			// Create the email configuration
 			$t_email_config[ 'to' ] = 'holidays@ggpsystems.co.uk';
-			$t_email_config[ 'subject' ] = 'Holiday request';
-			$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong> has requested a <strong>' . $p_holiday_request[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong>.</p>';
-			if( !empty( $p_holiday_request[ 'note' ] )) {
-				$t_email_config[ 'message' ] .= '<p>They included the following note with the request: <em>"' . $p_holiday_request[ 'note' ] . '"</em>.</p>';
+			$t_email_config[ 'subject' ] = $p_holiday[ 'holiday_type' ] . ' holiday request for ' . $t_user . ' on ' . $t_date;
+			$t_email_config[ 'message' ] = Holidays::$c_head . PHP_EOL . '<div class="row"><p><strong>' . $t_user . '</strong> has requested a <strong>' . $p_holiday[ 'holiday_type' ] . '</strong> holiday on <strong>' . $t_date . '</strong>.</p>';
+			if( !empty( $p_holiday[ 'note' ] )) {
+				$t_email_config[ 'message' ] .= '<p>They included the following note with the request: <em>"' . $p_holiday[ 'note' ] . '"</em>.</p>';
 			}
 			$t_email_config[ 'message' ] .= '<p>To approve the request, please click on the following link:</p>
 <a href="' . $t_approve_url . '">' . $t_approve_url . '</a>
@@ -620,10 +622,10 @@ class Holidays extends CI_Controller
 
 		switch( $p_holiday[ 'holiday_type' ] ) {
 			case "Multiple Days":
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0] . " to " . explode( ' ', $p_holiday[ 'end' ] )[0];
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 				break;
 			default:
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0];
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 				break;
 		}
 
@@ -648,10 +650,10 @@ class Holidays extends CI_Controller
 
 		switch( $p_holiday[ 'holiday_type' ] ) {
 			case "Multiple Days":
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0] . " to " . explode( ' ', $p_holiday[ 'end' ] )[0];
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 				break;
 			default:
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0];
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 				break;
 		}
 
@@ -676,10 +678,10 @@ class Holidays extends CI_Controller
 
 		switch( $p_holiday[ 'holiday_type' ] ) {
 			case "Multiple Days":
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0] . " to " . explode( ' ', $p_holiday[ 'end' ] )[0];
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]) . " to " . $this->Holiday_model->ISO_to_UK( $p_holiday[ 'end' ]);
 				break;
 			default:
-				$t_date = explode( ' ', $p_holiday[ 'start' ] )[0];
+				$t_date = $this->Holiday_model->ISO_to_UK( $p_holiday[ 'start' ]);
 				break;
 		}
 
@@ -744,7 +746,7 @@ class Holidays extends CI_Controller
 		$this->grocery_crud->set_subject( 'Vacations' );
 		$this->grocery_crud->fields( 'staff_id', 'start', 'end', 'holiday_type', 'note', 'confirmed', 'approved' );
 		$this->grocery_crud->field_type( 'holiday_type', 'enum', array( 'Half Day (AM)', 'Half Day (PM)', 'Single Day', 'Multiple Days' ));
-		$this->grocery_crud->set_relation( 'staff_id', 'staff', 'name' );
+		$this->grocery_crud->set_relation( 'staff_id', 'staff', 'name', 'active = true AND work_state != "NaN"' );
 
 		$output = $this->grocery_crud->render();
 		$this->crud_output( $output );
