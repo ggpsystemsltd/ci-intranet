@@ -1,6 +1,6 @@
 GGP intranet
 ============
-GGP intranet 2.1 using CodeIgniter 3.1.3 and Grocery CRUD 1.5.8
+GGP intranet 2.2 using CodeIgniter 3.1.5 and Grocery CRUD 1.5.8
 
 Development Environment
 -----------------------
